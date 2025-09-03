@@ -3,26 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PC 목표 저축 — MVP (Final)</title>
 
-<!-- ▼▼▼ PWA 필수: manifest + 색상 + iOS 메타/아이콘 + SW 등록 ▼▼▼ -->
+<title>조립 PC 자금 플랜</title>
+
+<!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0f15">
-
-<!-- iOS(사파리, 홈화면 추가) 대응 -->
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<script>
-  // 서비스워커 등록 (http/https/localhost에서만 동작)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(console.error);
-    });
-  }
-</script>
-<!-- ▲▲▲ 여기까지 PWA 세팅 ▲▲▲ -->
 
 <style>
   :root{--bg:#0b0f15;--panel:#121826;--txt:#e7eefb;--muted:#9fb0c9;--acc:#7aa2ff;--good:#6ee7a8;--warn:#ffd166;--bad:#ff7b7b;--orange:#ffb86b;--green:#6ee7a8;--gray:#94a3b8}
@@ -51,7 +40,7 @@
   .hide{display:none}
   .nowrap{white-space:nowrap}
 
-  /* 링 그래프(반응형, 항상 중앙) */
+  /* 링 그래프 */
   .ring-outer{display:flex;justify-content:center;width:100%}
   .ring{width:min(56vw,220px);height:min(56vw,220px);position:relative;display:grid;place-items:center}
   .ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
@@ -68,7 +57,7 @@
   .dot{width:10px;height:10px;border-radius:50%}
   .dot.gray{background:var(--gray)}.dot.orange{background:var(--orange)}.dot.green{background:var(--green)}
 
-  /* 자금 막대그래프(컴퓨터_구매_계획 스타일) */
+  /* 자금 막대그래프 */
   .bars{display:grid;gap:8px;margin-bottom:8px}
   .bar{height:12px;background:#09111f;border:1px solid #1f2a44;border-radius:999px;overflow:hidden}
   .bar>div{height:100%}
@@ -77,12 +66,12 @@
   .bar .invest{background:var(--green)}
   .barrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
 
-  /* 캘린더(컴퓨터_구매_계획 스타일) */
-  #cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  /* 캘린더 */
+  #cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .cal-cell{padding:8px;border-radius:12px;border:1px solid #1f2a44;background:#101624;color:inherit;min-height:66px;text-align:left}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
 
-  /* 부품: 카드형(가계부 스타일 + 간격 강화) */
+  /* 부품 카드형 */
   .p-cards{display:grid;gap:10px;margin-top:14px}
   .p-card{border:1px solid #1f2a44;background:#0f1524;border-radius:14px;padding:12px}
   .p-card .hbox{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
@@ -107,8 +96,17 @@
 <body>
 <header>
   <h1>조립 PC 자금 플랜</h1>
-  <div class="muted">이거 보면서 저축 열심히 해보기.</div>
+  <div class="muted" id="app-version">v2025.09.02-1</div>
 </header>
+
+<!-- 🔔 업데이트 배너 -->
+<div id="update-banner" class="card hide" style="position:sticky;top:56px;z-index:50;max-width:960px;margin:8px auto">
+  <div style="font-weight:600">새 버전이 있어요.</div>
+  <div class="flex" style="justify-content:flex-end">
+    <button id="btn-apply-update" class="primary">업데이트</button>
+    <button id="btn-dismiss-update" class="ghost">닫기</button>
+  </div>
+</div>
 
 <main>
   <!-- 홈 -->
@@ -143,7 +141,7 @@
     </div>
   </section>
 
-  <!-- 부품(카드형 고정) -->
+  <!-- 부품 -->
   <section id="view-parts" class="card hide">
     <div class="split">
       <h3 style="margin:0">부품 리스트</h3>
@@ -189,7 +187,7 @@
       <h3 style="margin:0">캘린더</h3>
       <div class="flex"><button id="btn-prev">◀</button><div id="cal-title" class="muted"></div><button id="btn-next">▶</button></div>
     </div>
-    <div id="cal-grid" style="display:grid;margin-top:8px"></div>
+    <div id="cal-grid" style="margin-top:8px"></div>
     <div id="cal-detail" class="card" style="margin-top:10px"></div>
   </section>
 
@@ -297,7 +295,7 @@ function settleDialog(){
   save(); renderAll();
 }
 
-/* ===== 부품(카드 렌더) ===== */
+/* ===== 부품 렌더 ===== */
 function renderParts(){
   const wrap = byId('parts-cards'); wrap.innerHTML='';
   state.parts.forEach(p=>{
@@ -431,8 +429,7 @@ function renderCalendar(){
   const grid = byId('cal-grid'); grid.innerHTML='';
   const {active} = activeTxnMap(); const target = targetTotal();
   const acts = active.slice().sort((a,b)=> a.dt.localeCompare(b.dt));
-  function apply(run,t){ if(t.kind==='income'){ if(t.to==='floating') run.floating+=t.amount; else run.fixed+=t.amount; } else if(t.kind==='expense'){ if(t.from==='floating') run.floating-=t.amount; else run.fixed-=t.amount; if(t.partId) run.invested+=t.amount; } else if(t.kind==='transfer'){ if(t.from==='floating'){ run.floating-=t.amount; run.fixed+=t.amount; } else { run.fixed-=t.amount; run.floating+=t.amount; } }
-  }
+  function apply(run,t){ if(t.kind==='income'){ if(t.to==='floating') run.floating+=t.amount; else run.fixed+=t.amount; } else if(t.kind==='expense'){ if(t.from==='floating') run.floating-=t.amount; else run.fixed-=t.amount; if(t.partId) run.invested+=t.amount; } else if(t.kind==='transfer'){ if(t.from==='floating'){ run.floating-=t.amount; run.fixed+=t.amount; } else { run.fixed-=t.amount; run.floating+=t.amount; } } }
   let run = {floating:0,fixed:0,invested:0}; const monthPrefix = `${y}-${pad2(m+1)}`; acts.forEach(t=>{ if(t.dt.slice(0,7) < monthPrefix) apply(run,t); }); let prevProg = target>0 ? (run.fixed+run.floating+run.invested)/target : 0;
   const byDate = {}; acts.forEach(t=>{ if(t.dt.slice(0,7)===monthPrefix){ (byDate[t.dt.slice(0,10)] ??= []).push(t);} });
   for(let i=0;i<firstDay.getDay();i++){ const c=document.createElement('div'); grid.appendChild(c); }
@@ -495,7 +492,6 @@ byId('btn-add-memo').onclick = ()=>{
   state.memos.push({id:uid(), dt:todayLocal(), text:t});
   save(); renderMemo();
 };
-/* 메모 삭제 */
 byId('memo-list').addEventListener('click', (e)=>{
   const btn = e.target.closest('button[data-act="del"]'); if(!btn) return;
   const id = btn.dataset.id;
@@ -523,6 +519,42 @@ function renderAll(){ renderRing(); renderParts(); renderFunds(); renderCalendar
 
 try{ load(); renderAll(); console.log('App initialized OK'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
+
+/* ===== PWA 업데이트 배너 로직 ===== */
+const SW_URL = 'sw.js';
+let newWorker;
+
+function showUpdateBanner(){ document.getElementById('update-banner')?.classList.remove('hide'); }
+function hideUpdateBanner(){ document.getElementById('update-banner')?.classList.add('hide'); }
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(SW_URL).then(reg => {
+      // 앱으로 돌아올 때 최신 검사
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update();
+      });
+      // 새 SW 감지되면 배너 표시
+      reg.addEventListener('updatefound', () => {
+        newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // 새 워커가 컨트롤을 잡으면 자동 새로고침
+      window.location.reload();
+    });
+  });
+}
+// 버튼
+document.getElementById('btn-apply-update')?.addEventListener('click', () => {
+  newWorker?.postMessage({ type: 'SKIP_WAITING' });
+});
+document.getElementById('btn-dismiss-update')?.addEventListener('click', hideUpdateBanner);
 </script>
 </body>
 </html>
