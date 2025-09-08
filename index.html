@@ -86,11 +86,12 @@
   .p-card .sum{margin-top:10px}
   .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
 
-  /* 캘린더 (이전 버전 스타일 유지) */
+  /* 캘린더 */
   #cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .cal-cell{padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
+
   /* 색상 입력 & 미리보기(계좌) */
   input[type="color"]{
     appearance:none; -webkit-appearance:none;
@@ -124,37 +125,41 @@
     color:#0b0f15;
   }
   [data-theme="light"] button:hover{ box-shadow:0 0 0 3px rgba(43,94,255,.12); }
-  
   [data-theme="light"] button.primary{
-    background:#2b5eff;            /* 선명한 파랑(가독성 유지) */
-    border-color:#2b5eff;
-    color:#fff;
+    background:#2b5eff; border-color:#2b5eff; color:#fff;
   }
   [data-theme="light"] button.primary:hover{ filter:brightness(1.05); }
-  
   [data-theme="light"] button.danger{
-    background:#fee2e2;            /* 연한 붉은색 */
-    border-color:#fca5a5;
-    color:#991b1b;
+    background:#fee2e2; border-color:#fca5a5; color:#991b1b;
   }
   [data-theme="light"] button.danger:hover{ filter:brightness(0.98); }
-  
   [data-theme="light"] button.ghost{
-    background:transparent;
-    border-color:#d0d7e2;
-    color:#5b6b83;
+    background:transparent; border-color:#d0d7e2; color:#5b6b83;
   }
-  
-  [data-theme="light"] .bar{
-    background:#ffffff;            /* 자금 탭 퍼센트 바 트랙 = 흰색 */
-  }
-  
-  /* 계좌 색상 미리보기 바도 라이트에서 밝게 */
+  [data-theme="light"] .bar{ background:#ffffff; }       /* 자금 탭 트랙 */
   [data-theme="light"] .color-preview{ background:#ffffff; }
-  
-  /* 라이트에서 상태 알약 테두리/문구도 너무 진하지 않게 */
   [data-theme="light"] .pill{ border-color:#d0d7e2; color:#5b6b83; }
-  
+
+  /* === 하단 탭(네비) — 라이트/다크 모두 네모, 후광/테두리 제거 === */
+  nav, nav * { -webkit-tap-highlight-color:transparent; }
+  nav button{
+    border-radius:0 !important;
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+    outline:none !important;
+  }
+  nav button:hover,
+  nav button:active,
+  nav button:focus,
+  nav button:focus-visible{
+    background:transparent !important;
+    box-shadow:none !important;
+    outline:none !important;
+  }
+  /* 라이트 테마에서도 공통 오버라이드 유지 */
+  [data-theme="light"] nav button{ color:var(--muted); }
+  [data-theme="light"] nav button.active{ color:var(--txt); }
 </style>
 </head>
 <body>
@@ -172,7 +177,6 @@
         <div class="ring">
           <svg id="ring-svg" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet">
             <circle cx="110" cy="110" r="88" stroke="var(--stroke)" stroke-width="14" fill="none"/>
-            <!-- 동적 세그먼트가 아래 그룹에 추가됩니다 -->
             <g id="seg-group"></g>
           </svg>
           <div class="center"><div id="home-percent">0.0%</div></div>
@@ -185,7 +189,6 @@
       </div>
     </div>
 
-    <!-- 전설: 1줄(구매누계·절약·초과) / 2줄(계좌들) -->
     <div id="home-legend" class="legend" style="margin-top:8px"></div>
 
     <div class="muted" id="home-extra" style="margin-top:6px"> </div>
@@ -204,14 +207,11 @@
     <div id="parts-cards" class="p-cards"></div>
   </section>
 
-  <!-- 자금 (자금 입력 + 계좌 관리 + 이체) -->
+  <!-- 자금 -->
   <section id="view-funds" class="card hide">
     <div class="split"><h3 style="margin:0">자금 관리</h3><span id="funds-balance" class="muted">-</span></div>
-
-    <!-- 동적 계좌 그래프 + 구매누계 막대 -->
     <div id="fund-bars" class="bars"></div>
 
-    <!-- 입금/지출 입력 -->
     <div class="row" style="margin-top:10px">
       <div>
         <label>구분</label>
@@ -251,10 +251,10 @@
       <div><label>금액(원)</label><input id="tr-amt" inputmode="numeric" placeholder="예: 100000"/></div>
       <div><label>메모</label><input id="tr-memo" placeholder="예: 정산/이체 등"/></div>
     </div>
-    <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">이체 실행</button></div>
+    <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">И체 실행</button></div>
   </section>
 
-  <!-- 캘린더 (정확히 이전 버전 렌더/계산 복구) -->
+  <!-- 캘린더 -->
   <section id="view-cal" class="card hide">
     <div class="split">
       <h3 style="margin:0">캘린더</h3>
@@ -334,14 +334,14 @@ const todayLocal = () => { const d=new Date(); return `${d.getFullYear()}-${pad2
 const nowLocalISO = () => { const d=new Date(); const off=-d.getTimezoneOffset(); const sign=off>=0?'+':'-'; const hh=pad2(Math.floor(Math.abs(off)/60)); const mm=pad2(Math.abs(off)%60); const ts=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; return ts+sign+hh+":"+mm; };
 const byId = id => document.getElementById(id);
 
-const LS_KEY = 'pc-goal-mvp-v6';  // 기존 키 유지
-const APP_SCHEMA = 3; // v1.1r1~
+const LS_KEY = 'pc-goal-mvp-v6';
+const APP_SCHEMA = 3;
 
 /* ===== 상태 ===== */
 let state = {
   schema: APP_SCHEMA,
   settings: { targetMode:'parts', manualTarget:0, theme:'dark' },
-  accounts: [],   // {id,name,type,color,archived?}
+  accounts: [],
   parts: [],
   txns: [],
   memos: []
@@ -355,7 +355,6 @@ function load(){
   state.settings ??= {theme:'dark', targetMode:'parts', manualTarget:0};
   state.accounts ??= []; state.parts ??= []; state.txns ??= []; state.memos ??= [];
 
-  // v1.1(=schema2) 올림
   if(state.schema < 2){
     const checking = {id:uid(), name:'입출금', type:'checking', color:'#ffb86b'};
     const savings  = {id:uid(), name:'적금',   type:'savings',  color:'#94a3b8'};
@@ -368,7 +367,6 @@ function load(){
     if(state.accounts.length===0) state.accounts=[checking,savings];
     state.schema=2;
   }
-  // v1.1r1(=schema3) 올림: 색상 채움 + 기본계정 개념 제거
   if(state.schema < 3){
     state.accounts.forEach(a=>{
       if(!a.color){
@@ -387,34 +385,25 @@ function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catc
 
 /* ===== 도우미 ===== */
 function accountById(id){ return state.accounts.find(a=>a.id===id); }
-
-/* 이름 기반 ‘역할’ 선택(종류 제거 대응) */
 function getRole(role){
   const preferredName = role==='savings' ? '적금' : '입출금';
-  // 1) 이름 매칭(보관 제외) → 2) 예전 type → 3) 첫 활성 계좌
   return state.accounts.find(a=>!a.archived && a.name===preferredName)
       || state.accounts.find(a=>!a.archived && a.type===role)
       || state.accounts.find(a=>!a.archived);
 }
-
-/* 활성 전표 집합 */
 function activeTxnMap(){
   const canceled = new Set();
   state.txns.forEach(t=>{ if(t.reversalOf){ canceled.add(t.id); canceled.add(t.reversalOf); }});
   const active = state.txns.filter(t=>!canceled.has(t.id));
   return {active, canceled};
 }
-
-/* 목표 합계 */
 function targetTotal(){
   if(state.settings.targetMode==='manual') return num(state.settings.manualTarget);
   return state.parts.reduce((s,p)=> s + num(p.price)*num(p.qty), 0);
 }
-
-/* 집계 */
 function compute(){
   const {active} = activeTxnMap();
-  const balances = {}; // accountId -> amount
+  const balances = {};
   let invested=0;
 
   active.forEach(t=>{
@@ -429,7 +418,6 @@ function compute(){
     }
   });
 
-  // 절약/초과: 구매된 항목만
   let saveSum=0, overSum=0;
   state.parts.forEach(p=>{
     const planned = num(p.price)*num(p.qty);
@@ -454,16 +442,13 @@ function setSegment(el, r, startFrac, frac){
   el.style.opacity = f>0 ? 1 : 0.18;
 }
 function renderRing(){
-  // 동적 세그: [구매누계] + [각 활성 계좌(생성 순서)]
   const {balances, invested, target, saveSum, overSum} = compute();
   const activeAccts = state.accounts.filter(a=>!a.archived);
   const sumAcc = activeAccts.reduce((s,a)=> s + Math.max(0,(balances[a.id]||0)), 0);
 
-  // 링 중앙 숫자 = (구매누계 + 모든 계좌합)/목표
   const totalF = target>0 ? Math.min(1, (invested + sumAcc)/target) : 0;
   byId('home-percent').textContent = (totalF*100).toFixed(1) + '%';
 
-  // 동적 세그 그룹 비움
   const g = document.getElementById('seg-group');
   while(g.firstChild) g.removeChild(g.firstChild);
 
@@ -471,7 +456,6 @@ function renderRing(){
   const r = 88;
   const svgNS = 'http://www.w3.org/2000/svg';
 
-  // 1) 구매누계(항상 첫번째, 초록)
   const invF = target>0 ? Math.max(0, Math.min(1, invested/target)) : 0;
   const c1 = document.createElementNS(svgNS, 'circle');
   c1.setAttribute('cx','110'); c1.setAttribute('cy','110'); c1.setAttribute('r', String(r));
@@ -480,7 +464,6 @@ function renderRing(){
   setSegment(c1, r, start, invF);
   start += invF;
 
-  // 2) 각 계좌(생성 순서대로, 음수는 0으로)
   activeAccts.forEach(a=>{
     const frac = target>0 ? Math.max(0, (balances[a.id]||0)/target) : 0;
     if(frac<=0) return;
@@ -497,17 +480,15 @@ function renderRing(){
   const extra = sumAll - targetSum;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(targetSum)}원`;
 
-  // 계좌 합계 줄(입출금 8.8% · 테스트 1.2% ... 형태)
   const acctLine = activeAccts.map(a=>{
     const pct = target>0 ? (Math.max(0, balances[a.id]||0) / target * 100) : 0;
     return `${a.name} ${pct.toFixed(1)}%`;
   }).join(' · ');
-  byId('home-sub').textContent = acctLine || ' ';
+  byId('home-sub').textContent = acctLine || ' ';
 
-  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
+  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
   byId('home-variance').innerHTML = `절약 <span style="color:#5fb3ff;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
 
-  // 전설: 1줄=구매누계/절약/초과, 2줄=활성 계좌(요청사항)
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   const row1 = document.createElement('div'); row1.className='legend-row';
@@ -603,7 +584,6 @@ function onPartsClick(e){
   if(act==='buy'){ if(p.status==='purchased') return undoPurchase(p); else return purchasePart(p); }
 }
 function choosePayAccounts(total){
-  // 이름 기반: 적금 → 입출금 순
   const s = getRole('savings'); const c = getRole('checking');
   const {balances} = compute();
   const sBal = Math.max(0,(s && balances[s.id])||0);
@@ -645,20 +625,15 @@ function addTxn({kind, amount, fromId, toId, memo, partId}){
   state.txns.push(t); save(); return t.id;
 }
 
-/* ===== 자금(그래프/입력) ===== */
+/* ===== 자금 ===== */
 function refreshAcctSelects(){
   const active = state.accounts.filter(a=>!a.archived);
   const opts = active.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
 
-  // 거래 입력
-  const acctSel = byId('txn-acct');
-  acctSel.innerHTML = opts;
-
-  // 이체
+  byId('txn-acct').innerHTML = opts;
   const s1 = byId('tr-from'), s2 = byId('tr-to');
   s1.innerHTML = opts; s2.innerHTML = opts;
 
-  // 기본값: From=입출금, To=적금(없으면 임의로)
   const defFrom = active.find(a=>a.name==='입출금')?.id || active[0]?.id;
   const defTo   = active.find(a=>a.name==='적금' && a.id!==defFrom)?.id
                || active.find(a=>a.id!==defFrom)?.id
@@ -670,11 +645,9 @@ function renderDynamicBars(){
   const wrap = byId('fund-bars'); wrap.innerHTML='';
   const {balances, invested, target} = compute();
 
-  // 구매누계
   const pctI  = target>0 ? Math.min(100, Math.round((invested/target)*1000)/10) : 0;
   wrap.appendChild(barRow('구매누계', '#6ee7a8', pctI));
 
-  // 각 계좌(보관 제외)
   state.accounts.filter(a=>!a.archived).forEach(a=>{
     const bal = balances[a.id]||0;
     const pct = target>0 ? Math.min(100, Math.round((Math.max(0,bal)/target)*1000)/10) : 0;
@@ -695,7 +668,6 @@ function renderFunds(){
   byId('funds-balance').textContent = `계좌합계 ${fmt(totalAcc)} · 구매누계 ${fmt(invested)}`;
   renderDynamicBars();
 }
-/* 입력 적용 */
 byId('btn-add-txn').onclick = ()=>{
   const kind = byId('txn-kind').value;
   const acctId = byId('txn-acct').value;
@@ -763,7 +735,6 @@ byId('acct-list').addEventListener('click', (e)=>{
   const {balances} = compute();
   const bal = Math.max(0, balances[id]||0);
 
-  // 잔액이 있으면 어디로 옮길지 선택
   if(bal>0){
     const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
     const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
@@ -774,7 +745,6 @@ byId('acct-list').addEventListener('click', (e)=>{
     addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
   }
 
-  // 실제 삭제 대신 보관 플래그
   a.archived = true;
   save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
 });
@@ -790,7 +760,7 @@ byId('btn-transfer').onclick = ()=>{
   byId('tr-amt').value=''; byId('tr-memo').value=''; renderAll();
 };
 
-/* ===== 캘린더 (이전 로직 그대로) ===== */
+/* ===== 캘린더 ===== */
 let calBase = new Date(); calBase.setDate(1);
 function renderCalendar(){
   const y = calBase.getFullYear(), m = calBase.getMonth();
@@ -886,7 +856,7 @@ byId('memo-list').addEventListener('click', (e)=>{
   }
 });
 
-/* ===== 설정 ===== */
+/* ===== 설정/초기화 ===== */
 function applyTheme(){ document.body.setAttribute('data-theme', state.settings.theme || 'dark'); }
 byId('theme-select').onchange = (e)=>{ state.settings.theme = e.target.value; save(); applyTheme(); };
 byId('btn-check-update').onclick = async ()=>{
@@ -910,7 +880,7 @@ byId('file-import').addEventListener('change', async (e)=>{
 });
 byId('btn-reset').onclick = ()=>{ if(confirm('정말로 모든 데이터를 초기화할까요?')){ localStorage.removeItem(LS_KEY); location.reload(); } };
 
-/* ===== 네비 & 초기화 ===== */
+/* ===== 네비 & 초기 렌더 ===== */
 const views = ['home','parts','funds','accounts-inline','transfer','cal','memo','settings'];
 function show(v){
   views.forEach(x=>{ const el=byId('view-'+x); if(el) el.classList.toggle('hide', x!==v); });
@@ -927,17 +897,9 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
-/* 부품 카드 이벤트 바인딩 */
-byId('parts-cards').addEventListener('input', onPartsChange);
-byId('parts-cards').addEventListener('change', onPartsChange);
-byId('parts-cards').addEventListener('click', onPartsClick);
-
-function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
-
 /* 부팅 */
 try{ load(); renderAll(); console.log('App v1.1r4 patched'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
-
