@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>조립 PC 자금 플랜 — v1.1r4</title>
+<title>조립 PC 자금 플랜 — v1.2 (variance ring)</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
   /* ===== 테마 변수 ===== */
@@ -11,8 +11,8 @@
     --bg:#0b0f15;--panel:#121826;--txt:#e7eefb;--muted:#9fb0c9;--acc:#7aa2ff;
     /* 색상 관리 포인트(다크) */
     --purchase:#6ee7a8;  /* 구매누계 */
-    --saving:#5fb3ff;    /* 절약 */
-    --over:#ff6b6b;      /* 초과 */
+    --saving:#5fb3ff;    /* 절약(바깥링·파랑) */
+    --over:#ff6b6b;      /* 초과(바깥링·빨강) */
     --good:#6ee7a8;      /* 캘린더 양수/‘구매’ 뱃지 */
     --link:#8ab4ff;--stroke:#1f2a44
   }
@@ -78,7 +78,7 @@
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
   nav button{appearance:none;-webkit-appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted);outline:none;border-radius:0;-webkit-tap-highlight-color:transparent}
   nav button.active{color:var(--txt)}
-  /* 라이트 모드에서 남던 파란 하이라이트/잔상 제거 */
+  /* 라이트 모드 포커스 잔상 제거 */
   [data-theme="light"] nav button:focus,[data-theme="light"] nav button:focus-visible{outline:none}
 
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -127,8 +127,8 @@
 </head>
 <body>
 <header>
-  <h1>조립 PC 자금 플랜 <span class="muted" id="app-version">v1.1r4</span></h1>
-  <div class="muted">구매누계·절약·초과 먼저 보고, 계좌는 자유롭게 추가/관리!</div>
+  <h1>조립 PC 자금 플랜 <span class="muted" id="app-version">v1.2</span></h1>
+  <div class="muted">구매누계 + (절약-초과)도 함께 반영! 계좌는 자유롭게 추가/관리</div>
 </header>
 
 <main>
@@ -139,8 +139,12 @@
       <div class="ring-outer">
         <div class="ring">
           <svg id="ring-svg" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet">
+            <!-- 안쪽(두꺼운) 배경 링 -->
             <circle cx="110" cy="110" r="88" stroke="var(--stroke)" stroke-width="14" fill="none"/>
             <g id="seg-group"></g>
+            <!-- 바깥(얇은) 배경 링 -->
+            <circle cx="110" cy="110" r="102" stroke="var(--stroke)" stroke-width="6" fill="none" opacity=".35"/>
+            <g id="variance-group"></g>
           </svg>
           <div class="center"><div id="home-percent">0.0%</div></div>
         </div>
@@ -300,7 +304,7 @@ const todayLocal = () => { const d=new Date(); return `${d.getFullYear()}-${pad2
 const nowLocalISO = () => { const d=new Date(); const off=-d.getTimezoneOffset(); const sign=off>=0?'+':'-'; const hh=pad2(Math.floor(Math.abs(off)/60)); const mm=pad2(Math.abs(off)%60); const ts=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; return ts+sign+hh+":"+mm; };
 const byId = id => document.getElementById(id);
 
-const LS_KEY = 'pc-goal-mvp-v6';
+const LS_KEY = 'pc-goal-mvp-v7';
 const APP_SCHEMA = 3;
 
 /* ===== 상태 ===== */
@@ -366,6 +370,11 @@ function targetTotal(){
   if(state.settings.targetMode==='manual') return num(state.settings.manualTarget);
   return state.parts.reduce((s,p)=> s + num(p.price)*num(p.qty), 0);
 }
+
+/* 핵심 계산:
+   - balances: 계좌별 잔액(되돌린 전표 제외)
+   - invested: 구매누계(실구매 합)
+   - saveSum / overSum: 부품별 (계획-실지출) 양수=절약, 음수=초과로 집계 */
 function compute(){
   const {active} = activeTxnMap();
   const balances = {};
@@ -383,16 +392,15 @@ function compute(){
     }
   });
 
-  // 절약/초과: "구매 완료된 항목" 기준
   let saveSum=0, overSum=0;
   state.parts.forEach(p=>{
     const planned = num(p.price)*num(p.qty);
     const hasActual = p.status==='purchased' && num(p.actualPaid||p.paid)>0;
     if(!hasActual) return;
     const actual = num(p.actualPaid || p.paid);
-    const v = actual - planned;
-    if(v<0) saveSum += (-v);
-    if(v>0) overSum += v;
+    const diff = planned - actual; // +면 절약, -면 초과
+    if(diff>0) saveSum += diff;
+    if(diff<0) overSum += -diff;
   });
 
   const target = targetTotal();
@@ -412,9 +420,12 @@ function renderRing(){
   const activeAccts = state.accounts.filter(a=>!a.archived);
   const sumAcc = activeAccts.reduce((s,a)=> s + Math.max(0,(balances[a.id]||0)), 0);
 
-  const totalF = target>0 ? Math.min(1, (invested + sumAcc)/target) : 0;
+  /* 중앙 퍼센트: (구매누계 + 계좌합 + (절약-초과)) / 목표 */
+  const netAdj = saveSum - overSum;
+  const totalF = target>0 ? Math.max(0, Math.min(1, (invested + sumAcc + netAdj)/target )) : 0;
   byId('home-percent').textContent = (totalF*100).toFixed(1) + '%';
 
+  /* 안쪽(두꺼운) 링: 구매누계 + 계좌들 누적 */
   const g = document.getElementById('seg-group');
   while(g.firstChild) g.removeChild(g.firstChild);
 
@@ -443,29 +454,55 @@ function renderRing(){
     start += frac;
   });
 
+  /* 바깥(얇은) 링: 절약은 12시→반시계(파랑), 초과는 12시→시계(빨강) */
+  const vg = document.getElementById('variance-group');
+  while(vg.firstChild) vg.removeChild(vg.firstChild);
+
+  const r2 = 102;
+  const saveFrac = target>0 ? Math.max(0, Math.min(1, saveSum/target)) : 0;
+  const overFrac = target>0 ? Math.max(0, Math.min(1, overSum/target)) : 0;
+
+  // 절약(반시계) → 시작점을 1 - f에 두고 시계방향으로 그리면 결과가 반시계처럼 보임
+  if(saveFrac>0){
+    const cs = document.createElementNS(svgNS, 'circle');
+    cs.setAttribute('cx','110'); cs.setAttribute('cy','110'); cs.setAttribute('r', String(r2));
+    cs.setAttribute('stroke','var(--saving)'); cs.setAttribute('stroke-width','6'); cs.setAttribute('stroke-linecap','round'); cs.setAttribute('fill','none');
+    vg.appendChild(cs);
+    setSegment(cs, r2, 1 - saveFrac, saveFrac);
+  }
+  // 초과(시계)
+  if(overFrac>0){
+    const co = document.createElementNS(svgNS, 'circle');
+    co.setAttribute('cx','110'); co.setAttribute('cy','110'); co.setAttribute('r', String(r2));
+    co.setAttribute('stroke','var(--over)'); co.setAttribute('stroke-width','6'); co.setAttribute('stroke-linecap','round'); co.setAttribute('fill','none');
+    vg.appendChild(co);
+    setSegment(co, r2, 0, overFrac);
+  }
+
+  // 요약/부가표시
   const targetSum = target;
-  const sumAll = invested + sumAcc;
+  const sumAll = invested + sumAcc + netAdj;
   const extra = sumAll - targetSum;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(targetSum)}원`;
 
-  // 계좌 비중 라인
   const acctLine = activeAccts.map(a=>{
     const pct = target>0 ? (Math.max(0, balances[a.id]||0) / target * 100) : 0;
     return `${a.name} ${pct.toFixed(1)}%`;
   }).join(' · ');
   byId('home-sub').textContent = acctLine || ' ';
 
-  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
+  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : (extra<0 ? (fmt(extra)+'원 미달') : ' ');
+
   byId('home-variance').innerHTML =
-    `절약 <span style="color:var(--saving);font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:var(--over);font-weight:700">-${fmt(overSum)}</span>`;
+    `바깥 링 — <span style="color:var(--saving);font-weight:700">절약 ${fmt(saveSum)}</span> · <span style="color:var(--over);font-weight:700">초과 ${fmt(overSum)}</span> (중앙 %에 ±반영)`;
 
   // 전설
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   const row1 = document.createElement('div'); row1.className='legend-row';
   row1.appendChild(mk('var(--purchase)','구매누계'));
-  row1.appendChild(mk('var(--saving)','절약'));
-  row1.appendChild(mk('var(--over)','초과'));
+  row1.appendChild(mk('var(--saving)','절약(바깥링)'));
+  row1.appendChild(mk('var(--over)','초과(바깥링)'));
   leg.appendChild(row1);
   const row2 = document.createElement('div'); row2.className='legend-row';
   activeAccts.forEach(a=> row2.appendChild(mk(a.color||'#7aa2ff', a.name)));
@@ -541,7 +578,7 @@ function onPartsClick(e){
   if(act==='del'){
     if(confirm('이 부품을 삭제할까요?')){
       state.parts = state.parts.filter(x=>x.id!==id);
-      save(); renderParts(); renderRing();
+      save(); renderParts(); renderRing(); renderCalendar();
     }
   }
   if(act==='edit-actual'){
@@ -550,7 +587,7 @@ function onPartsClick(e){
     if(input==null) return;
     const actual = num(input);
     p.actualPaid = actual;
-    save(); renderParts(); renderRing();
+    save(); renderParts(); renderRing(); renderCalendar();
   }
   if(act==='buy'){ if(p.status==='purchased') return undoPurchase(p); else return purchasePart(p); }
 }
@@ -700,7 +737,6 @@ byId('acct-list').addEventListener('click', (e)=>{
   if(!id || !act) return;
 
   if(act==='pick'){
-    // 같은 카드 안의 숨겨진 <input type="color">를 클릭
     const holder = e.target.closest('.card');
     const picker = holder.querySelector(`input[type="color"][data-id="${id}"]`);
     picker?.click();
@@ -749,6 +785,31 @@ byId('btn-transfer').onclick = ()=>{
 
 /* ===== 캘린더 ===== */
 let calBase = new Date(); calBase.setDate(1);
+function varianceBefore(monthPrefix){
+  // 해당 월 이전까지 누적된 (계획-실지출) 합
+  let v=0;
+  state.parts.forEach(p=>{
+    if(p.status!=='purchased' || !p.purchasedAt) return;
+    if(p.purchasedAt.slice(0,7) < monthPrefix){
+      const planned = num(p.price)*num(p.qty);
+      const actual  = num(p.actualPaid||p.paid);
+      v += (planned - actual); // +절약, -초과
+    }
+  });
+  return v;
+}
+function varianceOn(date){
+  let v=0;
+  state.parts.forEach(p=>{
+    if(p.status!=='purchased' || !p.purchasedAt) return;
+    if(p.purchasedAt.slice(0,10)===date){
+      const planned = num(p.price)*num(p.qty);
+      const actual  = num(p.actualPaid||p.paid);
+      v += (planned - actual);
+    }
+  });
+  return v;
+}
 function renderCalendar(){
   const y = calBase.getFullYear(), m = calBase.getMonth();
   byId('cal-title').textContent = `${y}-${pad2(m+1)}`;
@@ -760,9 +821,13 @@ function renderCalendar(){
     else if(t.kind==='expense'){ if(t.fromId) run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount; if(t.partId) run.i+=t.amount; }
     else if(t.kind==='transfer'){ if(t.fromId){run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount;} if(t.toId){run.b[t.toId]=(run.b[t.toId]||0)+t.amount;} }
   }
-  let run = {b:{},i:0}; const monthPrefix = `${y}-${pad2(m+1)}`;
+  let run = {b:{},i:0,v:0}; const monthPrefix = `${y}-${pad2(m+1)}`;
+
+  // 월 시작 이전 누적 반영
   acts.forEach(t=>{ if(t.dt.slice(0,7) < monthPrefix) apply(run,t); });
-  let prevProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
+  run.v = varianceBefore(monthPrefix);
+
+  let prevProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i+run.v)/target : 0;
   const byDate = {}; acts.forEach(t=>{ if(t.dt.slice(0,7)===monthPrefix){ (byDate[t.dt.slice(0,10)] ??= []).push(t);} });
   const firstDay = new Date(y,m,1);
   for(let i=0;i<firstDay.getDay();i++){ const c=document.createElement('div'); grid.appendChild(c); }
@@ -770,11 +835,15 @@ function renderCalendar(){
   for(let day=1; day<=days; day++){
     const dstr = `${y}-${pad2(m+1)}-${pad2(day)}`;
     (byDate[dstr]||[]).forEach(t=> apply(run,t));
-    const endProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
+    // 그날 발생한 절약/초과 조정 반영
+    run.v += varianceOn(dstr);
+
+    const endProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i+run.v)/target : 0;
     const delta = Math.round((endProg - prevProg)*1000)/10; prevProg = endProg;
 
-    // 그날 구매가 있었는지 체크(지출 + partId 존재)
-    const bought = (byDate[dstr]||[]).some(t=> t.kind==='expense' && !!t.partId);
+    // 그날 구매가 있었는지 체크(지출 + partId 존재) 또는 purchasedAt이 당일
+    const bought = (byDate[dstr]||[]).some(t=> t.kind==='expense' && !!t.partId)
+                || state.parts.some(p=> p.status==='purchased' && p.purchasedAt?.slice(0,10)===dstr);
 
     const cell = document.createElement('button'); cell.className='cal-cell';
     const color = delta>0? 'ok' : delta<0? 'dangerText' : 'muted';
@@ -804,6 +873,13 @@ function openDayDetail(date){
       <div class='actions' style='justify-content:flex-end'><button data-id='${t.id}' data-act='rev' class='danger'>되돌리기</button></div>
     </div>`;
   });
+
+  // 당일 구매 절약/초과 요약
+  const v = varianceOn(date);
+  if(v!==0){
+    html += `<div class='muted' style='margin-top:8px'>조정(${v>0?'절약':'초과'}): <span style='color:${v>0?'var(--saving)':'var(--over)'};font-weight:700'>${v>0?'+':''}${fmt(v)}</span></div>`;
+  }
+
   box.innerHTML = html;
   box.querySelectorAll('button[data-act="rev"]').forEach(btn=>{
     btn.onclick = ()=>{ const id = btn.dataset.id; const t = state.txns.find(x=>x.id===id); if(!t) return;
@@ -899,7 +975,7 @@ byId('parts-cards').addEventListener('click', onPartsClick);
 function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1r4 — calendar dot + color picker button'); }
+try{ load(); renderAll(); console.log('App v1.2 — variance ring + calendar variance'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
