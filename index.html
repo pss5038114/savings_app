@@ -251,7 +251,7 @@
       <div><label>금액(원)</label><input id="tr-amt" inputmode="numeric" placeholder="예: 100000"/></div>
       <div><label>메모</label><input id="tr-memo" placeholder="예: 정산/이체 등"/></div>
     </div>
-    <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">И체 실행</button></div>
+    <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">이체 실행</button></div>
   </section>
 
   <!-- 캘린더 -->
@@ -897,9 +897,21 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
+function renderAll(){
+  applyTheme();
+  renderRing();
+  renderParts();
+  refreshAcctSelects();
+  renderFunds();
+  renderAccounts();
+  renderCalendar();
+  renderMemo();
+}
+
 /* 부팅 */
 try{ load(); renderAll(); console.log('App v1.1r4 patched'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
+
