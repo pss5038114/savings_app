@@ -116,6 +116,45 @@
     .nowrap{white-space:normal}
     td input{font-size:14px}
   }
+
+  /* === Light Theme 버튼/그래프 트랙 밝게 보이기 === */
+  [data-theme="light"] button{
+    background:#f4f6fb;            /* 연한 기본 버튼 */
+    border-color:#d0d7e2;
+    color:#0b0f15;
+  }
+  [data-theme="light"] button:hover{ box-shadow:0 0 0 3px rgba(43,94,255,.12); }
+  
+  [data-theme="light"] button.primary{
+    background:#2b5eff;            /* 선명한 파랑(가독성 유지) */
+    border-color:#2b5eff;
+    color:#fff;
+  }
+  [data-theme="light"] button.primary:hover{ filter:brightness(1.05); }
+  
+  [data-theme="light"] button.danger{
+    background:#fee2e2;            /* 연한 붉은색 */
+    border-color:#fca5a5;
+    color:#991b1b;
+  }
+  [data-theme="light"] button.danger:hover{ filter:brightness(0.98); }
+  
+  [data-theme="light"] button.ghost{
+    background:transparent;
+    border-color:#d0d7e2;
+    color:#5b6b83;
+  }
+  
+  [data-theme="light"] .bar{
+    background:#ffffff;            /* 자금 탭 퍼센트 바 트랙 = 흰색 */
+  }
+  
+  /* 계좌 색상 미리보기 바도 라이트에서 밝게 */
+  [data-theme="light"] .color-preview{ background:#ffffff; }
+  
+  /* 라이트에서 상태 알약 테두리/문구도 너무 진하지 않게 */
+  [data-theme="light"] .pill{ border-color:#d0d7e2; color:#5b6b83; }
+  
 </style>
 </head>
 <body>
@@ -901,3 +940,4 @@ catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
+
