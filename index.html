@@ -9,14 +9,23 @@
   /* ===== 테마 변수 ===== */
   :root{
     --bg:#0b0f15;--panel:#121826;--txt:#e7eefb;--muted:#9fb0c9;--acc:#7aa2ff;
-    --good:#6ee7a8;--warn:#ffd166;--bad:#ff7b7b;--orange:#ffb86b;--green:#5fb3ff;--gray:#94a3b8;
+    /* 색상 관리 포인트(다크) */
+    --purchase:#6ee7a8;  /* 구매누계 */
+    --saving:#5fb3ff;    /* 절약 */
+    --over:#ff6b6b;      /* 초과 */
+    --good:#6ee7a8;      /* 캘린더 양수/‘구매’ 뱃지용 초록(별도 유지) */
     --link:#8ab4ff;--stroke:#1f2a44
   }
   [data-theme="light"]{
     --bg:#f6f8ff;--panel:#ffffff;--txt:#0b0f15;--muted:#5b6b83;--acc:#2b5eff;
-    --good:#0ea371;--warn:#b88400;--bad:#d73737;--orange:#ff9c2f;--green:#0ea371;--gray:#64748b;
+    /* 색상 관리 포인트(라이트) */
+    --purchase:#16a34a;  /* 원하는 색으로 자유 변경 */
+    --saving:#2563eb;
+    --over:#e11d48;
+    --good:#0ea371;      /* 캘린더 양수/‘구매’ 뱃지용 초록(라이트) */
     --link:#1d4ed8;--stroke:#e5e7eb
   }
+
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;background:var(--bg);color:var(--txt)}
@@ -42,11 +51,12 @@
   .split{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
   .muted{color:var(--muted);font-size:12px}
   .pill{padding:2px 8px;border:1px solid #2a3d66;border-radius:999px;font-size:12px}
-  .ok{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
-  .dangerText{color:var(--bad)}
+  .ok{color:var(--good)} .warn{color:#ffd166} .bad{color:var(--over)}
+  .dangerText{color:var(--over)}
   .hide{display:none}
   .nowrap{white-space:nowrap}
   .tag{display:inline-flex;align-items:center;gap:6px;margin-right:12px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 
   /* 링 그래프 */
   .ring-outer{display:flex;justify-content:center;width:100%}
@@ -60,13 +70,15 @@
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
   nav button{appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted)}
   nav button.active{color:var(--txt)}
+  /* 라이트 모드에서 파란 하일라이트 잔상 제거 */
+  [data-theme="light"] nav button:focus{outline:none}
+  [data-theme="light"] nav button::after{content:none}
 
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .legend{display:flex;gap:6px;flex-direction:column}
   .legend-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 
-  /* 자금 그래프(동적 계좌) */
+  /* 자금 그래프 */
   .bars{display:grid;gap:8px;margin-bottom:8px}
   .bar{height:12px;background:#09111f;border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
   .bar>div{height:100%}
@@ -82,19 +94,15 @@
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .p-card .head{display:flex;align-items:center;gap:8px}
   .p-card .title{flex:1}
-  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}
+  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}  /* 가격:수량 = 3:1 */
   .p-card .sum{margin-top:10px}
   .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
 
-  /* 캘린더 */
-  #cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  /* 캘린더 (이전 버전 스타일 유지) */
+  #cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .cal-cell{padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
-
-  /* 색상 미리보기(계좌) */
-  .color-preview{height:12px;border-radius:999px;background:#09111f;border:1px solid var(--stroke);overflow:hidden;margin-top:6px}
-  .color-preview>div{height:100%}
 
   /* 메모 드롭다운 폭 줄이기 */
   #memo-sort{width:100px}
@@ -106,24 +114,6 @@
     .nowrap{white-space:normal}
     td input{font-size:14px}
   }
-
-  /* === Light Theme 버튼/그래프 트랙 밝게 보이기 === */
-  [data-theme="light"] button{background:#f4f6fb;border-color:#d0d7e2;color:#0b0f15}
-  [data-theme="light"] button:hover{box-shadow:0 0 0 3px rgba(43,94,255,.12)}
-  [data-theme="light"] button.primary{background:#2b5eff;border-color:#2b5eff;color:#fff}
-  [data-theme="light"] button.primary:hover{filter:brightness(1.05)}
-  [data-theme="light"] button.danger{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-  [data-theme="light"] button.danger:hover{filter:brightness(0.98)}
-  [data-theme="light"] button.ghost{background:transparent;border-color:#d0d7e2;color:#5b6b83}
-  [data-theme="light"] .bar{background:#ffffff}
-  [data-theme="light"] .pill{border-color:#d0d7e2;color:#5b6b83}
-
-  /* === 하단 탭 — 네모, 하이라이트/테두리 제거 === */
-  nav, nav *{-webkit-tap-highlight-color:transparent}
-  nav button{border-radius:0!important;background:transparent!important;border:none!important;box-shadow:none!important;outline:none!important}
-  nav button:hover,nav button:active,nav button:focus,nav button:focus-visible{background:transparent!important;box-shadow:none!important;outline:none!important}
-  [data-theme="light"] nav button{color:var(--muted)}
-  [data-theme="light"] nav button.active{color:var(--txt)}
 </style>
 </head>
 <body>
@@ -146,12 +136,16 @@
           <div class="center"><div id="home-percent">0.0%</div></div>
         </div>
       </div>
+
       <div style="margin-top:8px">
         <div id="home-summary" style="font-size:18px;font-weight:700">-</div>
         <div class="muted" id="home-sub">-</div>
       </div>
     </div>
+
+    <!-- 전설 -->
     <div id="home-legend" class="legend" style="margin-top:8px"></div>
+
     <div class="muted" id="home-extra" style="margin-top:6px"> </div>
     <div id="home-variance" class="muted" style="margin-top:6px"> </div>
   </section>
@@ -161,7 +155,9 @@
     <div class="split">
       <h3 style="margin:0">부품 리스트</h3>
       <div class="flex" style="gap:6px">
-        <button id="btn-compuzone" class="ghost">컴퓨존</button>
+        <a href="https://www.compuzone.co.kr/online/online_main.htm?bannerid=GNBBannerOnlineMain" target="_blank" rel="noopener">
+          <button class="ghost">컴퓨존</button>
+        </a>
         <button id="btn-add-part">+ 추가</button>
       </div>
     </div>
@@ -221,7 +217,7 @@
       <h3 style="margin:0">캘린더</h3>
       <div class="flex"><button id="btn-prev">◀</button><div id="cal-title" class="muted"></div><button id="btn-next">▶</button></div>
     </div>
-    <div id="cal-grid" style="display:grid;margin-top:8px"></div>
+    <div id="cal-grid" style="margin-top:8px"></div>
     <div id="cal-detail" class="card" style="margin-top:10px"></div>
   </section>
 
@@ -344,7 +340,6 @@ function load(){
 }
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
-/* ===== 도우미 ===== */
 function accountById(id){ return state.accounts.find(a=>a.id===id); }
 function getRole(role){
   const preferredName = role==='savings' ? '적금' : '입출금';
@@ -417,14 +412,16 @@ function renderRing(){
   const r = 88;
   const svgNS = 'http://www.w3.org/2000/svg';
 
+  // 1) 구매누계
   const invF = target>0 ? Math.max(0, Math.min(1, invested/target)) : 0;
   const c1 = document.createElementNS(svgNS, 'circle');
   c1.setAttribute('cx','110'); c1.setAttribute('cy','110'); c1.setAttribute('r', String(r));
-  c1.setAttribute('stroke', '#5fb3ff'); c1.setAttribute('stroke-width','14'); c1.setAttribute('stroke-linecap','round'); c1.setAttribute('fill','none');
+  c1.setAttribute('stroke', 'var(--purchase)'); c1.setAttribute('stroke-width','14'); c1.setAttribute('stroke-linecap','round'); c1.setAttribute('fill','none');
   g.appendChild(c1);
   setSegment(c1, r, start, invF);
   start += invF;
 
+  // 2) 각 계좌
   activeAccts.forEach(a=>{
     const frac = target>0 ? Math.max(0, (balances[a.id]||0)/target) : 0;
     if(frac<=0) return;
@@ -441,6 +438,7 @@ function renderRing(){
   const extra = sumAll - targetSum;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(targetSum)}원`;
 
+  // 계좌 합계 줄
   const acctLine = activeAccts.map(a=>{
     const pct = target>0 ? (Math.max(0, balances[a.id]||0) / target * 100) : 0;
     return `${a.name} ${pct.toFixed(1)}%`;
@@ -448,14 +446,16 @@ function renderRing(){
   byId('home-sub').textContent = acctLine || ' ';
 
   byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
-  byId('home-variance').innerHTML = `절약 <span style="color:#6ee7a8;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
+  byId('home-variance').innerHTML =
+    `절약 <span style="color:var(--saving);font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:var(--over);font-weight:700">-${fmt(overSum)}</span>`;
 
+  // 전설
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   const row1 = document.createElement('div'); row1.className='legend-row';
-  row1.appendChild(mk('#5fb3ff','구매누계'));
-  row1.appendChild(mk('#6ee7a8','절약'));
-  row1.appendChild(mk('#ff6b6b','초과'));
+  row1.appendChild(mk('var(--purchase)','구매누계'));
+  row1.appendChild(mk('var(--saving)','절약'));
+  row1.appendChild(mk('var(--over)','초과'));
   leg.appendChild(row1);
   const row2 = document.createElement('div'); row2.className='legend-row';
   activeAccts.forEach(a=> row2.appendChild(mk(a.color||'#7aa2ff', a.name)));
@@ -496,7 +496,7 @@ function renderParts(){
           </div>
           <div class="split">
             <div class="muted">차액</div>
-            <div class="right" style="font-weight:700;${variance<0?'color:#6ee7a8':variance>0?'color:#ff6b6b':''}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
+            <div class="right" style="font-weight:700;${variance<0?'color:var(--saving)':variance>0?'color:var(--over)':''}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
           </div>
           <div class="actions">
             <button data-act="buy">${isPurchased?'되돌리기':'구매처리'}</button>
@@ -591,7 +591,7 @@ function refreshAcctSelects(){
   const active = state.accounts.filter(a=>!a.archived);
   const opts = active.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
 
-  byId('txn-acct').innerHTML = opts;
+  const acctSel = byId('txn-acct'); acctSel.innerHTML = opts;
   const s1 = byId('tr-from'), s2 = byId('tr-to');
   s1.innerHTML = opts; s2.innerHTML = opts;
 
@@ -607,7 +607,7 @@ function renderDynamicBars(){
   const {balances, invested, target} = compute();
 
   const pctI  = target>0 ? Math.min(100, Math.round((invested/target)*1000)/10) : 0;
-  wrap.appendChild(barRow('구매누계', '#5fb3ff', pctI));
+  wrap.appendChild(barRow('구매누계', 'var(--purchase)', pctI));
 
   state.accounts.filter(a=>!a.archived).forEach(a=>{
     const bal = balances[a.id]||0;
@@ -655,17 +655,15 @@ function renderAccounts(){
     div.innerHTML = `
       <div class="row">
         <div><label>이름</label><input data-k="name" data-id="${a.id}" value="${a.name}"></div>
-        <div>
-          <label>색상(그래프)</label>
-          <div class="color-preview"><div style="width:100%; background:${a.color||'#7aa2ff'}"></div></div>
-          <!-- 숨겨진 컬러 피커(버튼으로 호출) -->
-          <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}"
-                 style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0">
+        <div><label>색상(그래프)</label>
+          <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}" style="width:100%;height:40px;border-radius:12px;padding:0">
+          <div style="height:10px;border:1px solid var(--stroke);border-radius:999px;overflow:hidden;margin-top:8px">
+            <div style="height:100%;width:100%;background:${a.color||'#7aa2ff'}"></div>
+          </div>
         </div>
       </div>
       <div class="row" style="margin-top:6px">
-        <div style="display:flex;align-items:flex-end;justify-content:flex-end;gap:8px">
-          <button data-act="pickcolor" data-id="${a.id}">색상 지정</button>
+        <div style="display:flex;align-items:flex-end;justify-content:flex-end">
           <button class="danger" data-act="del" data-id="${a.id}">삭제</button>
         </div>
       </div>`;
@@ -677,9 +675,6 @@ byId('btn-add-acct').onclick = ()=>{
   state.accounts.push({id:uid(), name:'새 계좌', type:'other', color:'#7aa2ff', archived:false});
   save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
 };
-byId('btn-compuzone').onclick = () => {
-  window.open('https://www.compuzone.co.kr/online/online_main.htm?bannerid=GNBBannerOnlineMain','_blank');
-};
 byId('acct-list').addEventListener('change', (e)=>{
   const id = e.target.dataset.id; if(!id) return;
   const a = accountById(id); if(!a) return;
@@ -690,36 +685,27 @@ byId('acct-list').addEventListener('change', (e)=>{
 });
 byId('acct-list').addEventListener('click', (e)=>{
   const id = e.target.dataset.id; const act = e.target.dataset.act;
-  if(!id) return;
+  if(act!=='del') return;
+  const a = accountById(id); if(!a) return;
 
-  if(act==='pickcolor'){
-    const card = e.target.closest('.card');
-    const inp = card?.querySelector(`input[type="color"][data-id="${id}"]`);
-    if(inp){ inp.click(); }
-    return;
+  const activeCount = state.accounts.filter(x=>!x.archived).length;
+  if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
+
+  const {balances} = compute();
+  const bal = Math.max(0, balances[id]||0);
+
+  if(bal>0){
+    const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
+    const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
+    const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
+    if(answer==null) return;
+    const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
+    const dest = cands[idx];
+    addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
   }
 
-  if(act==='del'){
-    const a = accountById(id); if(!a) return;
-
-    const activeCount = state.accounts.filter(x=>!x.archived).length;
-    if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
-
-    const {balances} = compute();
-    const bal = Math.max(0, balances[id]||0);
-
-    if(bal>0){
-      const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
-      const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
-      const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
-      if(answer==null) return;
-      const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
-      const dest = cands[idx];
-      addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
-    }
-    a.archived = true;
-    save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
-  }
+  a.archived = true;
+  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
 });
 
 /* ===== 이체 ===== */
@@ -829,9 +815,9 @@ byId('memo-list').addEventListener('click', (e)=>{
   }
 });
 
-/* ===== 설정/초기화 ===== */
+/* ===== 설정 ===== */
 function applyTheme(){ document.body.setAttribute('data-theme', state.settings.theme || 'dark'); }
-byId('theme-select').onchange = (e)=>{ state.settings.theme = e.target.value; save(); applyTheme(); };
+byId('theme-select').onchange = (e)=>{ state.settings.theme = e.target.value; save(); applyTheme(); renderAll(); };
 byId('btn-check-update').onclick = async ()=>{
   try{ const reg = await navigator.serviceWorker?.getRegistration?.(); await reg?.update?.(); alert('업데이트 확인 완료! 새 버전이 있으면 잠시 후 자동 반영돼요.'); }
   catch(e){ alert('확인 실패: '+e.message); }
@@ -853,7 +839,7 @@ byId('file-import').addEventListener('change', async (e)=>{
 });
 byId('btn-reset').onclick = ()=>{ if(confirm('정말로 모든 데이터를 초기화할까요?')){ localStorage.removeItem(LS_KEY); location.reload(); } };
 
-/* ===== 네비 & 초기 렌더 ===== */
+/* ===== 네비 & 초기화 ===== */
 const views = ['home','parts','funds','accounts-inline','transfer','cal','memo','settings'];
 function show(v){
   views.forEach(x=>{ const el=byId('view-'+x); if(el) el.classList.toggle('hide', x!==v); });
@@ -870,22 +856,15 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
-function renderAll(){
-  applyTheme();
-  renderRing();
-  renderParts();
-  refreshAcctSelects();
-  renderFunds();
-  renderAccounts();
-  renderCalendar();
-  renderMemo();
-}
+byId('parts-cards').addEventListener('input', onPartsChange);
+byId('parts-cards').addEventListener('change', onPartsChange);
+byId('parts-cards').addEventListener('click', onPartsClick);
+
+function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1r4 patched'); }
+try{ load(); renderAll(); console.log('App v1.1r4 (style-driven colors)'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
-
-
