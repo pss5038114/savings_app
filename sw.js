@@ -1,5 +1,5 @@
 // sw.js
-const CACHE = 'app-cache-v23'; // ← 배포 시 숫자 올리기
+const CACHE = 'app-cache-v24'; // ← 배포 시 숫자 올리기
 const APP_ASSETS = [
   './',
   './index.html',
@@ -58,6 +58,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
+
 
 
 
