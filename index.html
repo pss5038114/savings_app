@@ -82,7 +82,7 @@
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .p-card .head{display:flex;align-items:center;gap:8px}
   .p-card .title{flex:1}
-  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}  /* 가격:수량 = 3:1 */
+  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}
   .p-card .sum{margin-top:10px}
   .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
 
@@ -92,20 +92,9 @@
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
 
-  /* 색상 입력 & 미리보기(계좌) */
-  input[type="color"]{
-    appearance:none; -webkit-appearance:none;
-    border:1px solid #263451; width:100%; height:44px; padding:0;
-    border-radius:12px; background:transparent; cursor:pointer;
-  }
-  input[type="color"]::-webkit-color-swatch-wrapper{ padding:2px; border-radius:10px }
-  input[type="color"]::-webkit-color-swatch{ border:none; border-radius:8px }
-  input[type="color"]::-moz-color-swatch{ border:none; border-radius:8px }
-  .color-preview{
-    height:12px; border-radius:999px; background:#09111f;
-    border:1px solid var(--stroke); overflow:hidden; margin-top:6px;
-  }
-  .color-preview>div{ height:100% }
+  /* 색상 미리보기(계좌) */
+  .color-preview{height:12px;border-radius:999px;background:#09111f;border:1px solid var(--stroke);overflow:hidden;margin-top:6px}
+  .color-preview>div{height:100%}
 
   /* 메모 드롭다운 폭 줄이기 */
   #memo-sort{width:100px}
@@ -119,47 +108,22 @@
   }
 
   /* === Light Theme 버튼/그래프 트랙 밝게 보이기 === */
-  [data-theme="light"] button{
-    background:#f4f6fb;            /* 연한 기본 버튼 */
-    border-color:#d0d7e2;
-    color:#0b0f15;
-  }
-  [data-theme="light"] button:hover{ box-shadow:0 0 0 3px rgba(43,94,255,.12); }
-  [data-theme="light"] button.primary{
-    background:#2b5eff; border-color:#2b5eff; color:#fff;
-  }
-  [data-theme="light"] button.primary:hover{ filter:brightness(1.05); }
-  [data-theme="light"] button.danger{
-    background:#fee2e2; border-color:#fca5a5; color:#991b1b;
-  }
-  [data-theme="light"] button.danger:hover{ filter:brightness(0.98); }
-  [data-theme="light"] button.ghost{
-    background:transparent; border-color:#d0d7e2; color:#5b6b83;
-  }
-  [data-theme="light"] .bar{ background:#ffffff; }       /* 자금 탭 트랙 */
-  [data-theme="light"] .color-preview{ background:#ffffff; }
-  [data-theme="light"] .pill{ border-color:#d0d7e2; color:#5b6b83; }
+  [data-theme="light"] button{background:#f4f6fb;border-color:#d0d7e2;color:#0b0f15}
+  [data-theme="light"] button:hover{box-shadow:0 0 0 3px rgba(43,94,255,.12)}
+  [data-theme="light"] button.primary{background:#2b5eff;border-color:#2b5eff;color:#fff}
+  [data-theme="light"] button.primary:hover{filter:brightness(1.05)}
+  [data-theme="light"] button.danger{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+  [data-theme="light"] button.danger:hover{filter:brightness(0.98)}
+  [data-theme="light"] button.ghost{background:transparent;border-color:#d0d7e2;color:#5b6b83}
+  [data-theme="light"] .bar{background:#ffffff}
+  [data-theme="light"] .pill{border-color:#d0d7e2;color:#5b6b83}
 
-  /* === 하단 탭(네비) — 라이트/다크 모두 네모, 후광/테두리 제거 === */
-  nav, nav * { -webkit-tap-highlight-color:transparent; }
-  nav button{
-    border-radius:0 !important;
-    background:transparent !important;
-    border:none !important;
-    box-shadow:none !important;
-    outline:none !important;
-  }
-  nav button:hover,
-  nav button:active,
-  nav button:focus,
-  nav button:focus-visible{
-    background:transparent !important;
-    box-shadow:none !important;
-    outline:none !important;
-  }
-  /* 라이트 테마에서도 공통 오버라이드 유지 */
-  [data-theme="light"] nav button{ color:var(--muted); }
-  [data-theme="light"] nav button.active{ color:var(--txt); }
+  /* === 하단 탭 — 네모, 하이라이트/테두리 제거 === */
+  nav, nav *{-webkit-tap-highlight-color:transparent}
+  nav button{border-radius:0!important;background:transparent!important;border:none!important;box-shadow:none!important;outline:none!important}
+  nav button:hover,nav button:active,nav button:focus,nav button:focus-visible{background:transparent!important;box-shadow:none!important;outline:none!important}
+  [data-theme="light"] nav button{color:var(--muted)}
+  [data-theme="light"] nav button.active{color:var(--txt)}
 </style>
 </head>
 <body>
@@ -182,15 +146,12 @@
           <div class="center"><div id="home-percent">0.0%</div></div>
         </div>
       </div>
-
       <div style="margin-top:8px">
         <div id="home-summary" style="font-size:18px;font-weight:700">-</div>
         <div class="muted" id="home-sub">-</div>
       </div>
     </div>
-
     <div id="home-legend" class="legend" style="margin-top:8px"></div>
-
     <div class="muted" id="home-extra" style="margin-top:6px"> </div>
     <div id="home-variance" class="muted" style="margin-top:6px"> </div>
   </section>
@@ -696,12 +657,15 @@ function renderAccounts(){
         <div><label>이름</label><input data-k="name" data-id="${a.id}" value="${a.name}"></div>
         <div>
           <label>색상(그래프)</label>
-          <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}">
           <div class="color-preview"><div style="width:100%; background:${a.color||'#7aa2ff'}"></div></div>
+          <!-- 숨겨진 컬러 피커(버튼으로 호출) -->
+          <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}"
+                 style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0">
         </div>
       </div>
       <div class="row" style="margin-top:6px">
-        <div style="display:flex;align-items:flex-end;justify-content:flex-end">
+        <div style="display:flex;align-items:flex-end;justify-content:flex-end;gap:8px">
+          <button data-act="pickcolor" data-id="${a.id}">색상 지정</button>
           <button class="danger" data-act="del" data-id="${a.id}">삭제</button>
         </div>
       </div>`;
@@ -726,27 +690,36 @@ byId('acct-list').addEventListener('change', (e)=>{
 });
 byId('acct-list').addEventListener('click', (e)=>{
   const id = e.target.dataset.id; const act = e.target.dataset.act;
-  if(act!=='del') return;
-  const a = accountById(id); if(!a) return;
+  if(!id) return;
 
-  const activeCount = state.accounts.filter(x=>!x.archived).length;
-  if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
-
-  const {balances} = compute();
-  const bal = Math.max(0, balances[id]||0);
-
-  if(bal>0){
-    const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
-    const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
-    const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
-    if(answer==null) return;
-    const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
-    const dest = cands[idx];
-    addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
+  if(act==='pickcolor'){
+    const card = e.target.closest('.card');
+    const inp = card?.querySelector(`input[type="color"][data-id="${id}"]`);
+    if(inp){ inp.click(); }
+    return;
   }
 
-  a.archived = true;
-  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+  if(act==='del'){
+    const a = accountById(id); if(!a) return;
+
+    const activeCount = state.accounts.filter(x=>!x.archived).length;
+    if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
+
+    const {balances} = compute();
+    const bal = Math.max(0, balances[id]||0);
+
+    if(bal>0){
+      const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
+      const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
+      const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
+      if(answer==null) return;
+      const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
+      const dest = cands[idx];
+      addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
+    }
+    a.archived = true;
+    save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+  }
 });
 
 /* ===== 이체 ===== */
@@ -914,4 +887,3 @@ catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
-
