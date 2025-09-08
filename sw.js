@@ -1,33 +1,35 @@
-// 간단한 버전 키 (내용만 바꿔도 캐시 갈아탐)
-const SW_VERSION = 'v1.0-icons';
-const CACHE_NAME = 'pc-plan-' + SW_VERSION;
-const PRECACHE = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png'
+const CACHE_NAME = "savings-app-v1.1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
+// 설치 단계에서 캐시
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    ))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.clients.claim();
 });
 
-// ★ fetch 핸들러: 없으면 설치 버튼이 안 뜨는 경우가 많음
-self.addEventListener('fetch', event => {
-  const req = event.request;
+// 활성화 단계에서 이전 캐시 정리
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
+    )
+  );
+});
+
+// 네트워크 요청 가로채기
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req))
+    caches.match(event.request).then(response =>
+      response || fetch(event.request)
+    )
   );
 });
