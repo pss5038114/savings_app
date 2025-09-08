@@ -13,16 +13,16 @@
     --purchase:#6ee7a8;  /* 구매누계 */
     --saving:#5fb3ff;    /* 절약 */
     --over:#ff6b6b;      /* 초과 */
-    --good:#6ee7a8;      /* 캘린더 양수/‘구매’ 뱃지용 초록(별도 유지) */
+    --good:#6ee7a8;      /* 캘린더 양수/‘구매’ 뱃지 */
     --link:#8ab4ff;--stroke:#1f2a44
   }
   [data-theme="light"]{
     --bg:#f6f8ff;--panel:#ffffff;--txt:#0b0f15;--muted:#5b6b83;--acc:#2b5eff;
-    /* 색상 관리 포인트(라이트) */
-    --purchase:#16a34a;  /* 원하는 색으로 자유 변경 */
+    /* 색상 관리 포인트(라이트) — 필요시 여기만 바꾸면 앱 전체 반영 */
+    --purchase:#16a34a;
     --saving:#2563eb;
     --over:#e11d48;
-    --good:#0ea371;      /* 캘린더 양수/‘구매’ 뱃지용 초록(라이트) */
+    --good:#0ea371;
     --link:#1d4ed8;--stroke:#e5e7eb
   }
 
@@ -44,10 +44,18 @@
   input,select,textarea{width:100%;background:#101624;color:var(--txt);border:1px solid #263451;border-radius:12px;padding:10px 12px;outline:none;min-width:0}
   [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff;color:#0b0f15;border-color:#d0d7e2}
   input:focus,textarea:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(122,162,255,.16)}
+
+  /* 버튼 */
   button{background:#1b2a4b;color:var(--txt);border:1px solid #2a3d66;border-radius:12px;padding:10px 12px;cursor:pointer}
   button.primary{background:#27468f;border-color:#3159b6}
   button.danger{background:#5a1f2a;border-color:#7a2b3a}
   button.ghost{background:transparent;border-color:#2a3d66;color:var(--muted)}
+  /* 라이트테마 버튼을 밝게 */
+  [data-theme="light"] button{background:#eef2ff;border-color:#c7d2fe;color:#0b0f15}
+  [data-theme="light"] button.primary{background:#2563eb;border-color:#1e40af;color:#fff}
+  [data-theme="light"] button.danger{background:#fee2e2;border-color:#fecaca;color:#7f1d1d}
+  [data-theme="light"] button.ghost{background:transparent;border-color:#cbd5e1;color:#64748b}
+
   .split{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
   .muted{color:var(--muted);font-size:12px}
   .pill{padding:2px 8px;border:1px solid #2a3d66;border-radius:999px;font-size:12px}
@@ -68,21 +76,21 @@
   /* 하단 네비(8개) */
   nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:rgba(18,24,38,.98);backdrop-filter:blur(6px);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
-  nav button{appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted)}
+  nav button{appearance:none;-webkit-appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted);outline:none;border-radius:0;-webkit-tap-highlight-color:transparent}
   nav button.active{color:var(--txt)}
-  /* 라이트 모드에서 파란 하일라이트 잔상 제거 */
-  [data-theme="light"] nav button:focus{outline:none}
-  [data-theme="light"] nav button::after{content:none}
+  /* 라이트 모드에서 남던 파란 하이라이트/잔상 제거 */
+  [data-theme="light"] nav button:focus,[data-theme="light"] nav button:focus-visible{outline:none}
 
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .legend{display:flex;gap:6px;flex-direction:column}
   .legend-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
-  /* 자금 그래프 */
+  /* 자금 그래프 막대 */
   .bars{display:grid;gap:8px;margin-bottom:8px}
   .bar{height:12px;background:#09111f;border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
   .bar>div{height:100%}
   .barrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+  [data-theme="light"] .bar{background:#ffffff;border-color:#e5e7eb}
 
   /* 부품 카드 */
   .p-cards{display:grid;gap:10px;margin-top:14px}
@@ -94,15 +102,16 @@
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .p-card .head{display:flex;align-items:center;gap:8px}
   .p-card .title{flex:1}
-  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}  /* 가격:수량 = 3:1 */
+  .p-card .meta{display:grid;grid-template-columns:3fr 1fr;gap:10px;margin-top:8px}
   .p-card .sum{margin-top:10px}
   .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
 
-  /* 캘린더 (이전 버전 스타일 유지) */
+  /* 캘린더 */
   #cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-  .cal-cell{padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
+  .cal-cell{position:relative;padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
+  .purchase-dot{position:absolute;right:8px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--purchase)}
 
   /* 메모 드롭다운 폭 줄이기 */
   #memo-sort{width:100px}
@@ -374,6 +383,7 @@ function compute(){
     }
   });
 
+  // 절약/초과: "구매 완료된 항목" 기준
   let saveSum=0, overSum=0;
   state.parts.forEach(p=>{
     const planned = num(p.price)*num(p.qty);
@@ -412,7 +422,7 @@ function renderRing(){
   const r = 88;
   const svgNS = 'http://www.w3.org/2000/svg';
 
-  // 1) 구매누계
+  // 1) 구매누계(실구매 합계)
   const invF = target>0 ? Math.max(0, Math.min(1, invested/target)) : 0;
   const c1 = document.createElementNS(svgNS, 'circle');
   c1.setAttribute('cx','110'); c1.setAttribute('cy','110'); c1.setAttribute('r', String(r));
@@ -438,7 +448,7 @@ function renderRing(){
   const extra = sumAll - targetSum;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(targetSum)}원`;
 
-  // 계좌 합계 줄
+  // 계좌 비중 라인
   const acctLine = activeAccts.map(a=>{
     const pct = target>0 ? (Math.max(0, balances[a.id]||0) / target * 100) : 0;
     return `${a.name} ${pct.toFixed(1)}%`;
@@ -655,15 +665,19 @@ function renderAccounts(){
     div.innerHTML = `
       <div class="row">
         <div><label>이름</label><input data-k="name" data-id="${a.id}" value="${a.name}"></div>
-        <div><label>색상(그래프)</label>
-          <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}" style="width:100%;height:40px;border-radius:12px;padding:0">
+        <div>
+          <label>색상(그래프)</label>
+          <!-- 얇은 미리보기 선 -->
           <div style="height:10px;border:1px solid var(--stroke);border-radius:999px;overflow:hidden;margin-top:8px">
-            <div style="height:100%;width:100%;background:${a.color||'#7aa2ff'}"></div>
+            <div data-role="colorbar" data-id="${a.id}" style="height:100%;width:100%;background:${a.color||'#7aa2ff'}"></div>
           </div>
         </div>
       </div>
       <div class="row" style="margin-top:6px">
-        <div style="display:flex;align-items:flex-end;justify-content:flex-end">
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+          <!-- 숨겨진 컬러 입력기 + 트리거 버튼 -->
+          <input class="hide" type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}">
+          <button data-act="pick" data-id="${a.id}">색상 지정</button>
           <button class="danger" data-act="del" data-id="${a.id}">삭제</button>
         </div>
       </div>`;
@@ -671,42 +685,56 @@ function renderAccounts(){
   });
   refreshAcctSelects();
 }
-byId('btn-add-acct').onclick = ()=>{
-  state.accounts.push({id:uid(), name:'새 계좌', type:'other', color:'#7aa2ff', archived:false});
-  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
-};
+/* 컬러 변경/이름 변경 */
 byId('acct-list').addEventListener('change', (e)=>{
   const id = e.target.dataset.id; if(!id) return;
   const a = accountById(id); if(!a) return;
   const k = e.target.dataset.k;
   if(k==='name') a.name = e.target.value;
-  if(k==='color') a.color = e.target.value;
+  if(k==='color'){ a.color = e.target.value; }
   save(); renderAccounts(); renderFunds(); renderRing();
 });
+/* 색상 지정 버튼/삭제 */
 byId('acct-list').addEventListener('click', (e)=>{
   const id = e.target.dataset.id; const act = e.target.dataset.act;
-  if(act!=='del') return;
-  const a = accountById(id); if(!a) return;
+  if(!id || !act) return;
 
-  const activeCount = state.accounts.filter(x=>!x.archived).length;
-  if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
-
-  const {balances} = compute();
-  const bal = Math.max(0, balances[id]||0);
-
-  if(bal>0){
-    const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
-    const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
-    const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
-    if(answer==null) return;
-    const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
-    const dest = cands[idx];
-    addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
+  if(act==='pick'){
+    // 같은 카드 안의 숨겨진 <input type="color">를 클릭
+    const holder = e.target.closest('.card');
+    const picker = holder.querySelector(`input[type="color"][data-id="${id}"]`);
+    picker?.click();
+    return;
   }
 
-  a.archived = true;
-  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+  if(act==='del'){
+    const a = accountById(id); if(!a) return;
+
+    const activeCount = state.accounts.filter(x=>!x.archived).length;
+    if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
+
+    const {balances} = compute();
+    const bal = Math.max(0, balances[id]||0);
+
+    if(bal>0){
+      const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
+      const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
+      const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
+      if(answer==null) return;
+      const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
+      const dest = cands[idx];
+      addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
+    }
+
+    const a2 = accountById(id); if(!a2) return;
+    a2.archived = true;
+    save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+  }
 });
+byId('btn-add-acct').onclick = ()=>{
+  state.accounts.push({id:uid(), name:'새 계좌', type:'other', color:'#7aa2ff', archived:false});
+  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+};
 
 /* ===== 이체 ===== */
 byId('btn-transfer').onclick = ()=>{
@@ -744,9 +772,17 @@ function renderCalendar(){
     (byDate[dstr]||[]).forEach(t=> apply(run,t));
     const endProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
     const delta = Math.round((endProg - prevProg)*1000)/10; prevProg = endProg;
+
+    // 그날 구매가 있었는지 체크(지출 + partId 존재)
+    const bought = (byDate[dstr]||[]).some(t=> t.kind==='expense' && !!t.partId);
+
     const cell = document.createElement('button'); cell.className='cal-cell';
     const color = delta>0? 'ok' : delta<0? 'dangerText' : 'muted';
-    cell.innerHTML = `<div style='font-weight:700'>${day}</div><div class='${color} pct' style='font-size:12px'>${delta>0?'+':''}${delta.toFixed(1)}%</div>`;
+    cell.innerHTML = `
+      <div style='font-weight:700'>${day}</div>
+      <div class='${color} pct' style='font-size:12px'>${delta>0?'+':''}${delta.toFixed(1)}%</div>
+      ${bought ? '<span class="purchase-dot" title="구매 있음"></span>' : ''}
+    `;
     cell.onclick = ()=> openDayDetail(dstr); grid.appendChild(cell);
   }
   byId('cal-detail').innerHTML = '<span class="muted">날짜를 선택하면 상세 내역이 표시됩니다.</span>';
@@ -815,7 +851,7 @@ byId('memo-list').addEventListener('click', (e)=>{
   }
 });
 
-/* ===== 설정 ===== */
+/* ===== 설정/테마 ===== */
 function applyTheme(){ document.body.setAttribute('data-theme', state.settings.theme || 'dark'); }
 byId('theme-select').onchange = (e)=>{ state.settings.theme = e.target.value; save(); applyTheme(); renderAll(); };
 byId('btn-check-update').onclick = async ()=>{
@@ -863,7 +899,7 @@ byId('parts-cards').addEventListener('click', onPartsClick);
 function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1r4 (style-driven colors)'); }
+try{ load(); renderAll(); console.log('App v1.1r4 — calendar dot + color picker button'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
