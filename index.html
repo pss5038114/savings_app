@@ -1018,9 +1018,17 @@ function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSele
 /* 부팅 */
 try{ load(); renderAll(); console.log('App v1.1 — edit-actual updates txn amounts'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
+
+if ('serviceWorker' in navigator) {
+  // 파일 위치는 루트(sw.js)에 두는 게 범용적입니다.
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    console.log('SW registered', reg.scope);
+  }).catch(err=>console.error('SW reg failed', err));
+}
 </script>
 </body>
 </html>
+
 
 
 
