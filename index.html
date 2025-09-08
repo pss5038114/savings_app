@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>조립 PC 자금 플랜 — v1.2.1 (edit-actual fixes)</title>
+<title>조립 PC 자금 플랜 — v1.1 (edit-actual fixes)</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
   /* ===== 테마 변수 ===== */
@@ -127,7 +127,7 @@
 </head>
 <body>
 <header>
-  <h1>조립 PC 자금 플랜 <span class="muted" id="app-version">v1.2.1</span></h1>
+  <h1>조립 PC 자금 플랜 <span class="muted" id="app-version">v1.1</span></h1>
   <div class="muted">구매누계 + (절약-초과)도 함께 반영! 계좌는 자유롭게 추가/관리</div>
 </header>
 
@@ -1012,8 +1012,9 @@ byId('parts-cards').addEventListener('click', onPartsClick);
 function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.2.1 — edit-actual updates txn amounts'); }
+try{ load(); renderAll(); console.log('App v1.1 — edit-actual updates txn amounts'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
+
