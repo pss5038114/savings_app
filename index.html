@@ -1019,15 +1019,17 @@ function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSele
 try{ load(); renderAll(); console.log('App v1.1 — edit-actual updates txn amounts'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' }); // ← 상대경로 + scope
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" })
+      .then(reg => console.log("SW registered", reg))
+      .catch(err => console.error("SW failed", err));
   });
 }
-
 </script>
 </body>
 </html>
+
 
 
 
