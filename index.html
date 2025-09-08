@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>조립 PC 자금 플랜 — v1.1r2</title>
+<title>조립 PC 자금 플랜 — v1.1r3</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
   /* ===== 테마 변수 ===== */
@@ -28,6 +28,11 @@
   .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
   input,select,button,textarea{width:100%;border:1px solid var(--stroke);background:transparent;color:var(--txt);padding:10px;border-radius:10px}
+  input[type="color"]{width:56px;height:34px;padding:0;border:none}
+  input[type="color"]::-webkit-color-swatch{border:none}
+  input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+  .color-row{display:flex;gap:8px;align-items:center}
+  .color-preview{flex:1;height:12px;border-radius:8px;border:1px solid var(--stroke)}
   button.primary{background:var(--acc);border:none;color:white}
   button.danger{background:#ff6b6b;border:none;color:white}
   .hide{display:none}
@@ -50,7 +55,7 @@
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .legend{display:flex;flex-direction:column;gap:6px}
   .legend-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .dot{width:10px;height:10px;border-radius:50%}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 
   /* 자금 그래프(동적 계좌) */
   .bars{display:grid;gap:8px}
@@ -65,7 +70,8 @@
   .p-card .thumb{width:68px;height:68px;border:1px dashed var(--stroke);border-radius:10px;display:grid;place-items:center;overflow:hidden}
   .p-card .thumb img{max-width:100%;max-height:68px;display:block}
   .p-card .body{flex:1}
-  .p-card .split{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px}
+  .p-card .split{display:grid;grid-template-columns:1fr auto;gap:6px}
+  .p-card .split-pq{grid-template-columns:3fr 1fr}
   .p-card .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 </style>
 </head>
@@ -164,17 +170,13 @@
     <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">이체 실행</button></div>
   </section>
 
-  <!-- 캘린더 -->
+  <!-- 캘린더 (이전 버전으로 복원) -->
   <section id="view-cal" class="card hide">
     <div class="split">
       <h3 style="margin:0">캘린더</h3>
-      <div class="flex">
-        <button id="btn-prev">◀</button>
-        <div id="cal-title" style="min-width:120px;text-align:center"></div>
-        <button id="btn-next">▶</button>
-      </div>
+      <div class="flex"><button id="btn-prev">◀</button><div id="cal-title" class="muted"></div><button id="btn-next">▶</button></div>
     </div>
-    <div id="cal-grid" class="grid" style="display:grid;margin-top:8px"></div>
+    <div id="cal-grid" style="display:grid;margin-top:8px"></div>
     <div id="cal-detail" class="card" style="margin-top:10px"></div>
   </section>
 
@@ -374,8 +376,8 @@ function renderRing(){
   const extra = sumAll - target;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(target)}원`;
   const acctLine = activeAccts.map(a=> `${a.name} ${fmt(Math.max(0,balances[a.id]||0))}`).join(' · ');
-  byId('home-sub').textContent = acctLine || '\u00A0';
-  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : '\u00A0';
+  byId('home-sub').textContent = acctLine || ' ';
+  byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
   byId('home-variance').innerHTML = `절약 <span style="color:#5fb3ff;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
 
   // 전설: 1줄=구매누계/절약/초과, 2줄=활성 계좌(요청사항)
@@ -408,7 +410,7 @@ function renderParts(){
         </label>
         <div class="body">
           <input data-k="name" placeholder="부품명" value="${p.name||''}">
-          <div class="split">
+          <div class="split split-pq">
             <div>
               <label>가격(원)</label><input data-k="price" inputmode="numeric" value="${num(p.price)||0}">
             </div>
@@ -496,7 +498,8 @@ function choosePayAccounts(total){
 function purchasePart(p){
   const planned = num(p.price)*num(p.qty);
   let actual = planned;
-  const input = prompt(`구매 금액(실지출)을 입력하세요\n(계획 ${fmt(planned)}원)`, String(actual));
+  const input = prompt(`구매 금액(실지출)을 입력하세요
+(계획 ${fmt(planned)}원)`, String(actual));
   if(input==null) return;
   actual = num(input); if(actual<=0) return alert('금액을 확인하세요');
 
@@ -594,7 +597,12 @@ function renderAccounts(){
     div.innerHTML = `
       <div class="row">
         <div><label>이름</label><input data-k="name" data-id="${a.id}" value="${a.name}"></div>
-        <div><label>색상(그래프)</label><input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}"></div>
+        <div><label>색상(그래프)</label>
+          <div class="color-row">
+            <input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}">
+            <div class="color-preview" style="background:${a.color||'#7aa2ff'}"></div>
+          </div>
+        </div>
       </div>
       <div class="row" style="margin-top:6px">
         <div style="display:flex;align-items:flex-end;justify-content:flex-end">
@@ -655,42 +663,63 @@ byId('btn-transfer').onclick = ()=>{
   byId('tr-amt').value=''; byId('tr-memo').value=''; renderAll();
 };
 
-/* ===== 캘린더 ===== */
+/* ===== 캘린더 (이전 로직) ===== */
 let calBase = new Date(); calBase.setDate(1);
+function pad2(n){ return String(n).padStart(2,'0'); }
 function renderCalendar(){
-  const y = calBase.getFullYear(), m = calBase.getMonth()+1;
-  byId('cal-title').textContent = `${y}.${String(m).padStart(2,'0')}`;
-  const first = new Date(y, m-1, 1).getDay();
-  const days = new Date(y, m, 0).getDate();
-  const grid = byId('cal-grid'); grid.style.gridTemplateColumns = 'repeat(7, 1fr)'; grid.innerHTML='';
-  const {active} = activeTxnMap();
-  const arr = [...Array(first).fill(null), ...Array(days).fill(0).map((_,i)=>i+1)];
-  arr.forEach(d=>{
+  const y = calBase.getFullYear(), m = calBase.getMonth();
+  byId('cal-title').textContent = `${y}-${pad2(m+1)}`;
+  const grid = byId('cal-grid'); grid.innerHTML='';
+  const {active} = activeTxnMap(); const target = targetTotal();
+  const acts = active.slice().sort((a,b)=> a.dt.localeCompare(b.dt));
+  function apply(run,t){
+    if(t.kind==='income'){ if(t.toId) run.b[t.toId]=(run.b[t.toId]||0)+t.amount; }
+    else if(t.kind==='expense'){ if(t.fromId) run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount; if(t.partId) run.i+=t.amount; }
+    else if(t.kind==='transfer'){ if(t.fromId) run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount; if(t.toId) run.b[t.toId]=(run.b[t.toId]||0)+t.amount; }
+  }
+  // 일자별 누적 + (구매누계+계좌합계) - 목표금액 = +/-
+  const days = new Date(y, m+1, 0).getDate();
+  const daily = Array.from({length:days},()=>({b:{},i:0,sum:0}));
+  acts.forEach(t=>{
+    const d = new Date(t.dt.replace('T',' ')); if(d.getFullYear()!==y || d.getMonth()!==m) return;
+    const di = d.getDate()-1;
+    for(let j=di;j<days;j++){ // 그날 이후 누적
+      apply(daily[j], t);
+    }
+  });
+  for(let j=0;j<days;j++){
+    const balSum = Object.values(daily[j].b).reduce((s,v)=>s+v,0);
+    daily[j].sum = (balSum + daily[j].i) - target;
+  }
+  grid.style.display='grid'; grid.style.gridTemplateColumns='repeat(7, 1fr)';
+  const wd = new Date(y,m,1).getDay();
+  for(let i=0;i<wd;i++){ const ph=document.createElement('div'); ph.className='card'; ph.style.visibility='hidden'; grid.appendChild(ph); }
+  for(let d=1; d<=days; d++){
     const cell = document.createElement('div'); cell.className='card';
-    if(!d){ cell.style.visibility='hidden'; grid.appendChild(cell); return; }
-    const dayStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const list = active.filter(t=> t.dt.startsWith(dayStr));
-    cell.innerHTML = `<div style='font-weight:700'>${d}</div><div class='muted' style='font-size:12px'>${list.length}건</div>`;
+    const s = daily[d-1].sum;
+    const color = s>0 ? '#ff6b6b' : (s<0 ? '#6ee7a8' : '#9fb0c9');
+    cell.innerHTML = `<div style="font-weight:700">${d}</div><div class="muted" style="font-size:12px;color:${color}">${s>0?'+':''}${fmt(s)}</div>`;
     cell.onclick = ()=>{
       const box = byId('cal-detail'); box.innerHTML='';
-      list.forEach(t=>{
-        const div = document.createElement('div'); div.className='card';
-        const a1 = t.fromId? (accountById(t.fromId)?.name||'') : '';
-        const a2 = t.toId? (accountById(t.toId)?.name||'') : '';
-        const kind = t.kind==='income'?'입금':(t.kind==='expense'?'지출':'이체');
-        div.innerHTML = `
-          <div class='flex' style='justify-content:space-between'>
-            <div>${t.dt.replace('T',' ').slice(0,16)}</div>
-            <div>${kind}</div>
-          </div>
-          <div class='muted'>${a1}${a1&&a2?' → ':''}${a2}</div>
-          <div style='font-weight:700'>${fmt(t.amount)}</div>
-          <div class='muted'>${t.memo||''}</div>`;
-        box.appendChild(div);
-      });
+      active.filter(t=>{ const dd=new Date(t.dt.replace('T',' ')); return dd.getFullYear()===y && dd.getMonth()===m && dd.getDate()===d; })
+        .forEach(t=>{
+          const div = document.createElement('div'); div.className='card';
+          const a1 = t.fromId? (accountById(t.fromId)?.name||'') : '';
+          const a2 = t.toId? (accountById(t.toId)?.name||'') : '';
+          const kind = t.kind==='income'?'입금':(t.kind==='expense'?'지출':'이체');
+          div.innerHTML = `
+            <div class='flex' style='justify-content:space-between'>
+              <div>${t.dt.replace('T',' ').slice(0,16)}</div>
+              <div>${kind}</div>
+            </div>
+            <div class='muted'>${a1}${a1&&a2?' → ':''}${a2}</div>
+            <div style='font-weight:700'>${fmt(t.amount)}</div>
+            <div class='muted'>${t.memo||''}</div>`;
+          box.appendChild(div);
+        });
     };
     grid.appendChild(cell);
-  });
+  }
 }
 byId('btn-prev').onclick = ()=>{ calBase.setMonth(calBase.getMonth()-1); renderCalendar(); };
 byId('btn-next').onclick = ()=>{ calBase.setMonth(calBase.getMonth()+1); renderCalendar(); };
@@ -771,7 +800,7 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'새 부품', image:'', price:0, qty:1, status:'planned', paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
-/* 부품 카드 이벤트 바인딩 (구매처리/삭제 미동작 이슈 해결: 위임 바인딩) */
+/* 부품 카드 이벤트 바인딩 */
 byId('parts-cards').addEventListener('input', onPartsChange);
 byId('parts-cards').addEventListener('change', onPartsChange);
 byId('parts-cards').addEventListener('click', onPartsClick);
