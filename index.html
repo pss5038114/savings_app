@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>조립 PC 자금 플랜 — v1.1r1</title>
+<title>조립 PC 자금 플랜 — v1.1r2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
   /* ===== 테마 변수 ===== */
@@ -21,95 +21,58 @@
   html,body{height:100%}
   body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;background:var(--bg);color:var(--txt)}
   a{color:var(--link);text-decoration:none}
-
-  header{position:sticky;top:0;background:linear-gradient(180deg,rgba(18,24,38,.98),rgba(18,24,38,.85));backdrop-filter:blur(6px);padding:14px 16px;border-bottom:1px solid var(--stroke);z-index:5}
-  [data-theme="light"] header{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.92))}
-  header h1{margin:0;font-size:16px}
-  main{padding:12px 12px calc(96px + env(safe-area-inset-bottom));max-width:960px;margin:0 auto;min-height:100%}
-
-  .card{background:var(--panel);border:1px solid var(--stroke);border-radius:16px;padding:14px;margin-bottom:10px}
+  h1,h2,h3{margin:0 0 6px 0}
+  .muted{color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:12px;margin:10px}
+  .grid{display:grid;gap:10px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row + .row{margin-top:8px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
-  input,select,textarea{width:100%;background:#101624;color:var(--txt);border:1px solid #263451;border-radius:12px;padding:10px 12px;outline:none;min-width:0}
-  [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff;color:#0b0f15;border-color:#d0d7e2}
-  input:focus,textarea:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(122,162,255,.16)}
-  button{background:#1b2a4b;color:var(--txt);border:1px solid #2a3d66;border-radius:12px;padding:10px 12px;cursor:pointer}
-  button.primary{background:#27468f;border-color:#3159b6}
-  button.danger{background:#5a1f2a;border-color:#7a2b3a}
-  button.ghost{background:transparent;border-color:#2a3d66;color:var(--muted)}
-  .split{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
-  .muted{color:var(--muted);font-size:12px}
-  .pill{padding:2px 8px;border:1px solid #2a3d66;border-radius:999px;font-size:12px}
-  .ok{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
-  .dangerText{color:var(--bad)}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input,select,button,textarea{width:100%;border:1px solid var(--stroke);background:transparent;color:var(--txt);padding:10px;border-radius:10px}
+  button.primary{background:var(--acc);border:none;color:white}
+  button.danger{background:#ff6b6b;border:none;color:white}
   .hide{display:none}
-  .nowrap{white-space:nowrap}
-  .tag{display:inline-flex;align-items:center;gap:6px;margin-right:12px}
 
-  /* 링 그래프 */
-  .ring-outer{display:flex;justify-content:center;width:100%}
-  .ring{width:min(56vw,220px);height:min(56vw,220px);position:relative;display:grid;place-items:center}
-  .ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+  /* 홈 링 */
+  .dash{display:grid;grid-template-columns:1fr;gap:8px}
+  .dash-title{display:flex;align-items:center;gap:6px}
+  .ring-outer{display:flex;justify-content:center}
+  .ring{position:relative;width:220px;height:220px}
+  .ring svg{transform:rotate(-90deg);display:block}
   .ring .center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
   .ring .center #home-percent{font-size:28px;font-weight:800}
 
   /* 하단 네비(8개) */
-  nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:rgba(18,24,38,.98);backdrop-filter:blur(6px);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+  nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:var(--panel);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
   nav button{appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted)}
   nav button.active{color:var(--txt)}
 
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .legend{display:flex;flex-direction:column;gap:6px}
+  .legend-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .dot{width:10px;height:10px;border-radius:50%}
 
   /* 자금 그래프(동적 계좌) */
-  .bars{display:grid;gap:8px;margin-bottom:8px}
-  .bar{height:12px;background:#09111f;border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
-  .bar>div{height:100%}
-  .barrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+  .bars{display:grid;gap:8px}
+  .barrow{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .bar{height:10px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden}
+  .bar>div{height:10px}
 
   /* 부품 카드 */
-  .p-cards{display:grid;gap:10px;margin-top:14px}
-  .p-card{border:1px solid var(--stroke);background:#0f1524;border-radius:14px;padding:12px}
-  [data-theme="light"] .p-card{background:#fff;border-color:#e5e7eb}
-  .p-card .hbox{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
-  .thumb{width:96px;height:96px;border-radius:12px;background:#0b1220;border:1px solid #243055;display:grid;place-items:center;color:var(--muted);overflow:hidden;cursor:pointer}
-  [data-theme="light"] .thumb{background:#f5f7ff;border-color:#d0d7e2}
-  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .p-card .head{display:flex;align-items:center;gap:8px}
-  .p-card .title{flex:1}
-  .p-card .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
-  .p-card .sum{margin-top:10px}
-  .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
-
-  /* 캘린더 */
-  #cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-  .cal-cell{padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
-  [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
-  .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
-
-  /* 메모 드롭다운 폭 줄이기 */
-  #memo-sort{width:100px}
-
-  @media (max-width: 640px){
-    main{padding:10px 10px calc(96px + env(safe-area-inset-bottom))}
-    .row,.row3{grid-template-columns:1fr}
-    nav button{padding:10px 0;font-size:12px}
-    .nowrap{white-space:normal}
-    td input{font-size:14px}
-  }
+  .p-cards{display:grid;gap:12px}
+  .p-card{border:1px solid var(--stroke);border-radius:14px;padding:10px}
+  .p-card .hbox{display:flex;gap:10px}
+  .p-card .thumb{width:68px;height:68px;border:1px dashed var(--stroke);border-radius:10px;display:grid;place-items:center;overflow:hidden}
+  .p-card .thumb img{max-width:100%;max-height:68px;display:block}
+  .p-card .body{flex:1}
+  .p-card .split{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px}
+  .p-card .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 </style>
 </head>
-<body>
-<header>
-  <h1>조립 PC 자금 플랜 <span class="muted" id="app-version">v1.1r1</span></h1>
-  <div class="muted">구매누계·절약·초과 먼저 보고, 계좌는 자유롭게 추가/관리!</div>
-</header>
+<body data-theme="dark">
 
-<main>
+<!-- ===== 상단 뷰들 ===== -->
+<main style="padding-bottom:86px">
   <!-- 홈 -->
   <section id="view-home" class="card">
     <div class="dash">
@@ -142,13 +105,10 @@
   <!-- 부품 -->
   <section id="view-parts" class="card hide">
     <div class="split">
-      <h3 style="margin:0">부품 리스트</h3>
-      <div class="flex" style="gap:6px">
-        <a class="ghost" href="https://www.compuzone.co.kr/online/online_main.htm?bannerid=GNBBannerOnlineMain" target="_blank" rel="noopener">컴퓨존 열기 ↗</a>
-        <button id="btn-add-part">+ 추가</button>
-      </div>
+      <h3 style="margin:0">부품</h3>
+      <button id="btn-add-part">+ 부품 추가</button>
     </div>
-    <div id="parts-cards" class="p-cards"></div>
+    <div class="p-cards" id="parts-cards"></div>
   </section>
 
   <!-- 자금 (자금 입력 + 계좌 관리 + 이체) -->
@@ -161,8 +121,11 @@
     <!-- 입금/지출 입력 -->
     <div class="row" style="margin-top:10px">
       <div>
-        <label>구분</label>
-        <select id="txn-kind"><option value="income">+ 입금</option><option value="expense">- 지출</option></select>
+        <label>유형</label>
+        <select id="txn-kind">
+          <option value="income">입금</option>
+          <option value="expense">지출(구매)</option>
+        </select>
       </div>
       <div>
         <label>계좌</label>
@@ -205,9 +168,13 @@
   <section id="view-cal" class="card hide">
     <div class="split">
       <h3 style="margin:0">캘린더</h3>
-      <div class="flex"><button id="btn-prev">◀</button><div id="cal-title" class="muted"></div><button id="btn-next">▶</button></div>
+      <div class="flex">
+        <button id="btn-prev">◀</button>
+        <div id="cal-title" style="min-width:120px;text-align:center"></div>
+        <button id="btn-next">▶</button>
+      </div>
     </div>
-    <div id="cal-grid" style="display:grid;margin-top:8px"></div>
+    <div id="cal-grid" class="grid" style="display:grid;margin-top:8px"></div>
     <div id="cal-detail" class="card" style="margin-top:10px"></div>
   </section>
 
@@ -230,36 +197,38 @@
   <section id="view-settings" class="card hide">
     <h3 style="margin:0 0 8px 0">설정</h3>
 
-    <div class="card" style="margin-top:6px">
-      <h4 style="margin:0 0 8px 0">일반</h4>
-      <div class="row">
-        <div>
-          <label>테마</label>
-          <select id="theme-select">
-            <option value="dark">다크</option>
-            <option value="light">라이트</option>
-          </select>
-        </div>
-        <div>
-          <label>업데이트</label>
-          <button id="btn-check-update">업데이트 확인</button>
-        </div>
+    <div class="row">
+      <div>
+        <label>테마</label>
+        <select id="theme-select">
+          <option value="dark">다크</option>
+          <option value="light">라이트</option>
+        </select>
+      </div>
+      <div>
+        <label>목표 금액 계산</label>
+        <select id="target-mode">
+          <option value="parts">부품 총합(기본)</option>
+          <option value="manual">직접 입력</option>
+        </select>
       </div>
     </div>
 
-    <div class="card" style="margin-top:10px">
-      <h4 style="margin:0 0 8px 0">데이터</h4>
-      <div class="flex" style="gap:8px">
-        <button id="btn-export">백업(내보내기)</button>
-        <button id="btn-import">복원(가져오기)</button>
-        <input id="file-import" type="file" accept="application/json" style="display:none">
-        <span class="muted" style="flex:1"></span>
-        <button id="btn-reset" class="danger">가계부 초기화</button>
-      </div>
+    <div class="row" id="manual-target-row" style="margin-top:8px;display:none">
+      <div><label>목표 금액(원)</label><input id="manual-target" inputmode="numeric" placeholder="예: 8000000"/></div>
+    </div>
+
+    <div class="flex" style="justify-content:flex-end;margin-top:10px">
+      <button id="btn-check-update">업데이트 확인</button>
+      <button id="btn-export">백업(파일로 저장)</button>
+      <button id="btn-import">복원(파일에서 불러오기)</button>
+      <input type="file" id="file-import" accept="application/json" style="display:none"/>
+      <button id="btn-reset" class="danger">모든 데이터 초기화</button>
     </div>
   </section>
 </main>
 
+<!-- ===== 네비게이션 ===== -->
 <nav>
   <button data-view="home" class="active">홈</button>
   <button data-view="parts">부품</button>
@@ -272,35 +241,23 @@
 </nav>
 
 <script>
-/* ===== 유틸/상수 ===== */
-const fmt = n => (Number(n||0)).toLocaleString('ko-KR');
-const num = s => Math.max(0, Math.floor(Number(String(s||'').replace(/[^0-9.-]/g,''))||0));
-const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : 'id_'+Math.random().toString(36).slice(2));
-const pad2 = n => String(n).padStart(2,'0');
-const todayLocal = () => { const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
-const nowLocalISO = () => { const d=new Date(); const off=-d.getTimezoneOffset(); const sign=off>=0?'+':'-'; const hh=pad2(Math.floor(Math.abs(off)/60)); const mm=pad2(Math.abs(off)%60); const ts=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; return ts+sign+hh+":"+mm; };
-const byId = id => document.getElementById(id);
-
-const LS_KEY = 'pc-goal-mvp-v6';
-const APP_SCHEMA = 3; // v1.1r1
-
-/* ===== 상태 ===== */
-let state = {
-  schema: APP_SCHEMA,
-  settings: { targetMode:'parts', manualTarget:0, theme:'dark' },
-  accounts: [],   // {id,name,type,color,archived?}
-  parts: [],
-  txns: [],
-  memos: []
-};
-
-/* ===== 로드 & 마이그 ===== */
+/* ===== 로컬 저장 ===== */
+const LS_KEY = 'savings-app-v3';
+const APP_SCHEMA = 3;
+let state = {};
 function load(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = JSON.parse(raw); }catch(e){}
-
-  state.schema ??= 1;
-  state.settings ??= {theme:'dark', targetMode:'parts', manualTarget:0};
-  state.accounts ??= []; state.parts ??= []; state.txns ??= []; state.memos ??= [];
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw){
+    state = {schema:APP_SCHEMA, accounts:[], parts:[], txns:[], memos:[], settings:{theme:'dark',targetMode:'parts',manualTarget:0}};
+    // 기본 계좌 2개
+    state.accounts.push({id:uid(), name:'입출금', type:'checking', color:'#ffb86b', archived:false});
+    state.accounts.push({id:uid(), name:'적금',   type:'savings',  color:'#94a3b8', archived:false});
+    save();
+  } else {
+    state = JSON.parse(raw);
+  }
+  // 마이그레이션
+  state.schema ??= 1; state.accounts ??= []; state.parts ??= []; state.txns ??= []; state.memos ??= [];
 
   // v1.1(=schema2) 올림
   if(state.schema < 2){
@@ -317,15 +274,9 @@ function load(){
   }
   // v1.1r1(=schema3) 올림: 색상 채움 + 기본계정 개념 제거
   if(state.schema < 3){
-    state.accounts.forEach(a=>{
-      if(!a.color){
-        a.color = a.type==='savings' ? '#94a3b8'
-               : a.type==='checking'? '#ffb86b'
-               : '#7aa2ff';
-      }
-    });
-    delete state.settings.defaultCheckingId;
-    delete state.settings.defaultSavingsId;
+    state.accounts.forEach(a=>{ a.color ||= (a.type==='checking'?'#ffb86b':(a.type==='savings'?'#94a3b8':'#7aa2ff')); a.archived ??= false; });
+    delete state.settings?.defaultCheckingId;
+    delete state.settings?.defaultSavingsId;
     state.schema=3;
   }
 }
@@ -422,17 +373,22 @@ function renderRing(){
   const sumAll = totalAcc + invested;
   const extra = sumAll - target;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(target)}원`;
-  byId('home-sub').textContent = `구매누계 ${fmt(invested)} · 적금 ${fmt(fixed)} · 입출금 ${others<0?'-':''}${fmt(Math.abs(others))}`;
+  const acctLine = activeAccts.map(a=> `${a.name} ${fmt(Math.max(0,balances[a.id]||0))}`).join(' · ');
+  byId('home-sub').textContent = acctLine || '\u00A0';
   byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : '\u00A0';
   byId('home-variance').innerHTML = `절약 <span style="color:#5fb3ff;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
 
-  // 전설: 구매누계/절약/초과 + 활성 계좌
+  // 전설: 1줄=구매누계/절약/초과, 2줄=활성 계좌(요청사항)
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
-  leg.appendChild(mk('#6ee7a8','구매누계'));
-  leg.appendChild(mk('#5fb3ff','절약'));
-  leg.appendChild(mk('#ff6b6b','초과'));
-  activeAccts.forEach(a=> leg.appendChild(mk(a.color||'#7aa2ff', a.name)));
+  const row1 = document.createElement('div'); row1.className='legend-row';
+  row1.appendChild(mk('#6ee7a8','구매누계'));
+  row1.appendChild(mk('#5fb3ff','절약'));
+  row1.appendChild(mk('#ff6b6b','초과'));
+  leg.appendChild(row1);
+  const row2 = document.createElement('div'); row2.className='legend-row';
+  activeAccts.forEach(a=> row2.appendChild(mk(a.color||'#7aa2ff', a.name)));
+  leg.appendChild(row2);
 }
 
 /* ===== 부품 ===== */
@@ -448,20 +404,21 @@ function renderParts(){
       <div class="hbox">
         <label class="thumb">
           ${p.image?`<img src="${p.image}" alt="thumb">`:'이미지'}
-          <input type="file" accept="image/*" data-act="img" style="display:none">
+          <input type="file" accept="image/*" data-act="img" style="display:none"/>
         </label>
-        <div>
-          <div class="head">
-            <input class="title" data-k="name" placeholder="제품명" value="${p.name||''}">
-            ${isPurchased?'<span class="pill ok">구매</span>':'<span class="pill">대기</span>'}
+        <div class="body">
+          <input data-k="name" placeholder="부품명" value="${p.name||''}">
+          <div class="split">
+            <div>
+              <label>가격(원)</label><input data-k="price" inputmode="numeric" value="${num(p.price)||0}">
+            </div>
+            <div>
+              <label>수량</label><input data-k="qty" inputmode="numeric" value="${num(p.qty)||1}">
+            </div>
           </div>
-          <div class="meta">
-            <div><label>가격(계획)</label><input data-k="price" inputmode="numeric" value="${p.price||0}"></div>
-            <div><label>수량</label><input data-k="qty" inputmode="numeric" value="${p.qty||1}"></div>
-          </div>
-          <div class="split sum">
-            <div class="muted">합계(계획)</div>
-            <div class="right" style="font-weight:700">${fmt(planned)}원</div>
+          <div class="split">
+            <div class="muted">계획</div>
+            <div class="right" style="font-weight:700">${fmt(planned)}</div>
           </div>
           <div class="split">
             <div class="muted">실지출</div>
@@ -469,7 +426,7 @@ function renderParts(){
           </div>
           <div class="split">
             <div class="muted">차액</div>
-            <div class="right" style="font-weight:700;${variance<0?'color:#5fb3ff':variance>0?'color:#ff6b6b':''}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
+            <div class="right" style="font-weight:700;${variance<0?`color:#6ee7a8`:(variance>0?`color:#ff6b6b`:``)}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
           </div>
           <div class="actions">
             <button data-act="buy">${isPurchased?'되돌리기':'구매처리'}</button>
@@ -484,9 +441,9 @@ function renderParts(){
 function onPartsChange(e){
   const holder = e.target.closest('[data-id]'); if(!holder) return;
   const id = holder.dataset.id; const p = state.parts.find(x=>x.id===id); if(!p) return;
-  const act = e.target.dataset.act; const k = e.target.dataset.k;
+  const act=e.target.dataset.act, k=e.target.dataset.k;
   if(act==='img'){
-    const file = e.target.files?.[0]; if(!file) return;
+    const file=e.target.files?.[0]; if(!file) return;
     const fr = new FileReader(); fr.onload = ()=>{ p.image = fr.result; save(); renderParts(); renderRing(); }; fr.readAsDataURL(file); return;
   }
   if(k){
@@ -503,8 +460,15 @@ function onPartsClick(e){
 
   if(act==='del'){
     if(confirm('이 부품을 삭제할까요?')){
-      state.parts = state.parts.filter(x=>x.id!==id);
-      save(); renderParts(); renderRing();
+      // 연결된 지출 전표 되돌림
+      if(p.purchaseTxnIds?.length){
+        p.purchaseTxnIds.forEach(id=>{
+          const original = state.txns.find(t=>t.id===id); if(!original) return;
+          state.txns.push({id:uid(), dt:nowLocalISO(), kind:'reversal', amount:original.amount, fromId:original.fromId, toId:original.toId, memo:'부품 삭제(자동 되돌림)', partId:original.partId, reversalOf:original.id});
+        });
+      }
+      state.parts = state.parts.filter(x=>x.id!==p.id);
+      save(); renderParts(); renderRing(); renderFunds();
     }
   }
   if(act==='edit-actual'){
@@ -616,16 +580,9 @@ byId('btn-add-txn').onclick = ()=>{
   const acctId = byId('txn-acct').value;
   const amt  = num(byId('txn-amt').value);
   const memo = byId('txn-memo').value;
-  if(amt<=0) return alert('금액을 확인하세요');
-
-  const {balances} = compute();
-  if(kind==='expense'){
-    const bal = Math.max(0, balances[acctId]||0);
-    if(amt>bal) return alert(`해당 계좌 잔액보다 큰 지출은 불가합니다.\n잔액: ${fmt(bal)}원`);
-    addTxn({kind:'expense', amount:amt, fromId:acctId, memo});
-  } else {
-    addTxn({kind:'income', amount:amt, toId:acctId, memo});
-  }
+  if(!acctId || amt<=0) return alert('입력값을 확인하세요');
+  if(kind==='income') addTxn({kind:'income', amount:amt, toId:acctId, memo});
+  else addTxn({kind:'expense', amount:amt, fromId:acctId, memo});
   byId('txn-amt').value=''; byId('txn-memo').value=''; renderAll();
 };
 
@@ -701,58 +658,38 @@ byId('btn-transfer').onclick = ()=>{
 /* ===== 캘린더 ===== */
 let calBase = new Date(); calBase.setDate(1);
 function renderCalendar(){
-  const y = calBase.getFullYear(), m = calBase.getMonth();
-  byId('cal-title').textContent = `${y}-${pad2(m+1)}`;
-  const grid = byId('cal-grid'); grid.innerHTML='';
-  const {active} = activeTxnMap(); const target = targetTotal();
-  const acts = active.slice().sort((a,b)=> a.dt.localeCompare(b.dt));
-  function apply(run,t){
-    if(t.kind==='income'){ if(t.toId) run.b[t.toId]=(run.b[t.toId]||0)+t.amount; }
-    else if(t.kind==='expense'){ if(t.fromId) run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount; if(t.partId) run.i+=t.amount; }
-    else if(t.kind==='transfer'){ if(t.fromId){run.b[t.fromId]=(run.b[t.fromId]||0)-t.amount;} if(t.toId){run.b[t.toId]=(run.b[t.toId]||0)+t.amount;} }
-  }
-  let run = {b:{},i:0}; const monthPrefix = `${y}-${pad2(m+1)}`;
-  acts.forEach(t=>{ if(t.dt.slice(0,7) < monthPrefix) apply(run,t); });
-  let prevProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
-  const byDate = {}; acts.forEach(t=>{ if(t.dt.slice(0,7)===monthPrefix){ (byDate[t.dt.slice(0,10)] ??= []).push(t);} });
-  const firstDay = new Date(y,m,1);
-  for(let i=0;i<firstDay.getDay();i++){ const c=document.createElement('div'); grid.appendChild(c); }
-  const days = new Date(y,m+1,0).getDate();
-  for(let day=1; day<=days; day++){
-    const dstr = `${y}-${pad2(m+1)}-${pad2(day)}`;
-    (byDate[dstr]||[]).forEach(t=> apply(run,t));
-    const endProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
-    const delta = Math.round((endProg - prevProg)*1000)/10; prevProg = endProg;
-    const cell = document.createElement('button'); cell.className='cal-cell';
-    const color = delta>0? 'ok' : delta<0? 'dangerText' : 'muted';
-    cell.innerHTML = `<div style='font-weight:700'>${day}</div><div class='${color} pct' style='font-size:12px'>${delta>0?'+':''}${delta.toFixed(1)}%</div>`;
-    cell.onclick = ()=> openDayDetail(dstr); grid.appendChild(cell);
-  }
-  byId('cal-detail').innerHTML = '<span class="muted">날짜를 선택하면 상세 내역이 표시됩니다.</span>';
-}
-function openDayDetail(date){
-  const {active} = activeTxnMap(); const list = active.filter(t=> t.dt.slice(0,10)===date); const box = byId('cal-detail');
-  if(list.length===0){ box.innerHTML = `<div class='muted'>${date} 내역 없음</div>`; return; }
-  let html = `<div style='font-weight:700;margin-bottom:8px'>${date}</div>`;
-  list.forEach(t=>{
-    const from = t.fromId? (accountById(t.fromId)?.name||'') : '';
-    const to   = t.toId?   (accountById(t.toId)?.name||'')   : '';
-    const sign = t.kind==='income' ? '+' : t.kind==='expense' ? '-' : '';
-    const acctStr = t.kind==='transfer' ? `${from} → ${to}` : (from||to||'');
-    html += `<div class='p-card'>
-      <div class='split'><div><span class='muted'>일시</span> <span style='font-weight:700'>${t.dt.slice(11,16)}</span></div>
-      <div><span class='muted'>계좌</span> <span>${acctStr}</span></div></div>
-      <div class='muted' style='margin-top:6px'>금액</div><div style='font-weight:700'>${sign}${fmt(t.amount)}</div>
-      <div class='muted' style='margin-top:6px'>메모</div><div>${t.memo||''}</div>
-      <div class='actions' style='justify-content:flex-end'><button data-id='${t.id}' data-act='rev' class='danger'>되돌리기</button></div>
-    </div>`;
-  });
-  box.innerHTML = html;
-  box.querySelectorAll('button[data-act="rev"]').forEach(btn=>{
-    btn.onclick = ()=>{ const id = btn.dataset.id; const t = state.txns.find(x=>x.id===id); if(!t) return;
-      if(!confirm('이 전표를 되돌릴까요?')) return;
-      state.txns.push({id:uid(), dt:nowLocalISO(), kind:'reversal', amount:t.amount, fromId:t.fromId||null, toId:t.toId||null, memo:'전표 되돌리기', partId:t.partId||null, reversalOf:t.id});
-      save(); renderAll(); openDayDetail(date); };
+  const y = calBase.getFullYear(), m = calBase.getMonth()+1;
+  byId('cal-title').textContent = `${y}.${String(m).padStart(2,'0')}`;
+  const first = new Date(y, m-1, 1).getDay();
+  const days = new Date(y, m, 0).getDate();
+  const grid = byId('cal-grid'); grid.style.gridTemplateColumns = 'repeat(7, 1fr)'; grid.innerHTML='';
+  const {active} = activeTxnMap();
+  const arr = [...Array(first).fill(null), ...Array(days).fill(0).map((_,i)=>i+1)];
+  arr.forEach(d=>{
+    const cell = document.createElement('div'); cell.className='card';
+    if(!d){ cell.style.visibility='hidden'; grid.appendChild(cell); return; }
+    const dayStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const list = active.filter(t=> t.dt.startsWith(dayStr));
+    cell.innerHTML = `<div style='font-weight:700'>${d}</div><div class='muted' style='font-size:12px'>${list.length}건</div>`;
+    cell.onclick = ()=>{
+      const box = byId('cal-detail'); box.innerHTML='';
+      list.forEach(t=>{
+        const div = document.createElement('div'); div.className='card';
+        const a1 = t.fromId? (accountById(t.fromId)?.name||'') : '';
+        const a2 = t.toId? (accountById(t.toId)?.name||'') : '';
+        const kind = t.kind==='income'?'입금':(t.kind==='expense'?'지출':'이체');
+        div.innerHTML = `
+          <div class='flex' style='justify-content:space-between'>
+            <div>${t.dt.replace('T',' ').slice(0,16)}</div>
+            <div>${kind}</div>
+          </div>
+          <div class='muted'>${a1}${a1&&a2?' → ':''}${a2}</div>
+          <div style='font-weight:700'>${fmt(t.amount)}</div>
+          <div class='muted'>${t.memo||''}</div>`;
+        box.appendChild(div);
+      });
+    };
+    grid.appendChild(cell);
   });
 }
 byId('btn-prev').onclick = ()=>{ calBase.setMonth(calBase.getMonth()-1); renderCalendar(); };
@@ -760,13 +697,13 @@ byId('btn-next').onclick = ()=>{ calBase.setMonth(calBase.getMonth()+1); renderC
 
 /* ===== 메모 ===== */
 function renderMemo(){
-  const order = byId('memo-sort').value;
   const box = byId('memo-list'); box.innerHTML='';
-  const arr = state.memos.slice();
-  arr.sort((a,b)=> order==='desc' ? b.dt.localeCompare(a.dt) : a.dt.localeCompare(b.dt));
-  arr.forEach(m=>{
+  const order = byId('memo-sort').value==='asc' ? 1 : -1;
+  const items = [...state.memos].sort((a,b)=> order*(a.dt.localeCompare(b.dt)));
+  items.forEach(m=>{
     const div = document.createElement('div'); div.className='card';
-    div.innerHTML = `<div class='split' style='margin-bottom:10px'>
+    div.innerHTML = `
+      <div class='flex' style='justify-content:space-between'>
         <div style='font-size:16px'>${m.text}</div><div class='muted'>${m.dt.replace('T',' ').slice(0,16)}</div>
       </div>
       <div class='flex' style='justify-content:flex-end;margin-top:8px;gap:8px'>
@@ -803,7 +740,7 @@ byId('btn-check-update').onclick = async ()=>{
 };
 byId('btn-export').onclick = ()=>{
   try{ const raw = localStorage.getItem(LS_KEY)||'{}'; const blob = new Blob([raw],{type:'application/json'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pc_savings_backup_'+(new Date().toISOString().slice(0,10))+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='savings-backup.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   }catch(e){ alert('백업 실패: '+e.message); }
 };
 byId('btn-import').onclick = ()=> byId('file-import').click();
@@ -827,24 +764,30 @@ function show(v){
   if(v==='parts') renderParts();
   if(v==='funds') { refreshAcctSelects(); renderFunds(); }
   if(v==='accounts-inline') renderAccounts();
-  if(v==='transfer') { refreshAcctSelects(); }
   if(v==='cal') renderCalendar();
   if(v==='memo') renderMemo();
   if(v==='settings'){ byId('theme-select').value = state.settings.theme||'dark'; }
 }
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
-byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
+byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'새 부품', image:'', price:0, qty:1, status:'planned', paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
-/* 부품 카드 이벤트 바인딩 (구매처리/삭제가 안되던 문제 해결) */
+/* 부품 카드 이벤트 바인딩 (구매처리/삭제 미동작 이슈 해결: 위임 바인딩) */
 byId('parts-cards').addEventListener('input', onPartsChange);
 byId('parts-cards').addEventListener('change', onPartsChange);
 byId('parts-cards').addEventListener('click', onPartsClick);
 
-function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
+function renderAll(){ applyTheme(); renderRing(); renderParts(); renderDynamicBars(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1r1 patched'); }
-catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
+try{ load(); renderAll(); console.log('App loaded'); }
+catch(e){ alert('초기화 실패: '+e.message); }
+
+/* ===== 유틸 ===== */
+function byId(id){ return document.getElementById(id); }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function nowLocalISO(){ const d=new Date(); const t=new Date(d.getTime()-d.getTimezoneOffset()*60000); return t.toISOString().slice(0,19); }
+function num(x){ x = (typeof x==='string')? x.replace(/[^0-9.-]/g,'') : x; const v=Number(x||0); return isFinite(v)?v:0; }
+function fmt(n){ const s = (num(n)||0).toLocaleString('ko-KR'); return s; }
 </script>
 </body>
 </html>
