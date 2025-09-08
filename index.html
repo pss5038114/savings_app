@@ -55,8 +55,8 @@
   .ring .center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
   .ring .center #home-percent{font-size:28px;font-weight:800}
 
-  /* 하단 네비(6개) */
-  nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:rgba(18,24,38,.98);backdrop-filter:blur(6px);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+  /* 하단 네비(8개) */
+  nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:rgba(18,24,38,.98);backdrop-filter:blur(6px);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
   nav button{appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted)}
   nav button.active{color:var(--txt)}
@@ -90,6 +90,9 @@
   .cal-cell{padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
+
+  /* 메모 드롭다운 폭 줄이기 */
+  #memo-sort{width:100px}
 
   @media (max-width: 640px){
     main{padding:10px 10px calc(96px + env(safe-area-inset-bottom))}
@@ -129,7 +132,7 @@
       </div>
     </div>
 
-    <!-- 전설(순서: 구매누계, 절약, 초과, 나머지 계좌들) -->
+    <!-- 전설(구매누계, 절약, 초과, 각 계좌) -->
     <div id="home-legend" class="legend" style="margin-top:8px"></div>
 
     <div class="muted" id="home-extra" style="margin-top:6px"> </div>
@@ -175,7 +178,7 @@
     </div>
   </section>
 
-  <!-- 계좌 관리 (이제 자금 탭 아래로 이동) -->
+  <!-- 계좌 관리 -->
   <section id="view-accounts-inline" class="card hide">
     <div class="split">
       <h3 style="margin:0">계좌 관리</h3>
@@ -184,7 +187,7 @@
     <div id="acct-list"></div>
   </section>
 
-  <!-- 이체 카드 (독립) -->
+  <!-- 이체 -->
   <section id="view-transfer" class="card hide">
     <div class="split"><h3 style="margin:0">이체</h3></div>
     <div class="row">
@@ -285,7 +288,7 @@ const APP_SCHEMA = 3; // v1.1r1
 let state = {
   schema: APP_SCHEMA,
   settings: { targetMode:'parts', manualTarget:0, theme:'dark' },
-  accounts: [],   // {id,name,type, color}
+  accounts: [],   // {id,name,type,color,archived?}
   parts: [],
   txns: [],
   memos: []
@@ -297,10 +300,9 @@ function load(){
 
   state.schema ??= 1;
   state.settings ??= {theme:'dark', targetMode:'parts', manualTarget:0};
-  state.accounts ??= [];
-  state.parts ??= []; state.txns ??= []; state.memos ??= [];
+  state.accounts ??= []; state.parts ??= []; state.txns ??= []; state.memos ??= [];
 
-  // v1.1(=schema2)로 올리기 (이전 버전 호환)
+  // v1.1(=schema2) 올림
   if(state.schema < 2){
     const checking = {id:uid(), name:'입출금', type:'checking', color:'#ffb86b'};
     const savings  = {id:uid(), name:'적금',   type:'savings',  color:'#94a3b8'};
@@ -313,7 +315,7 @@ function load(){
     if(state.accounts.length===0) state.accounts=[checking,savings];
     state.schema=2;
   }
-  // v1.1r1(=schema3)로 올리기: 계좌 color 채우기, 기본계정 개념 제거
+  // v1.1r1(=schema3) 올림: 색상 채움 + 기본계정 개념 제거
   if(state.schema < 3){
     state.accounts.forEach(a=>{
       if(!a.color){
@@ -331,9 +333,17 @@ function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catc
 
 /* ===== 도우미 ===== */
 function accountById(id){ return state.accounts.find(a=>a.id===id); }
-function getTypeFirst(t){ return state.accounts.find(a=>a.type===t) || state.accounts[0]; }
 
-/* 트랜잭션 활성 */
+/* 이름 기반 ‘역할’ 선택(종류 제거 대응) */
+function getRole(role){
+  const preferredName = role==='savings' ? '적금' : '입출금';
+  // 1) 이름 매칭(보관 제외) → 2) 예전 type → 3) 첫 활성 계좌
+  return state.accounts.find(a=>!a.archived && a.name===preferredName)
+      || state.accounts.find(a=>!a.archived && a.type===role)
+      || state.accounts.find(a=>!a.archived);
+}
+
+/* 활성 전표 집합 */
 function activeTxnMap(){
   const canceled = new Set();
   state.txns.forEach(t=>{ if(t.reversalOf){ canceled.add(t.id); canceled.add(t.reversalOf); }});
@@ -365,12 +375,12 @@ function compute(){
     }
   });
 
-  // 절약/초과: 구매된(혹은 실제 지출값 있는) 항목만 집계
+  // 절약/초과: 구매된 항목만
   let saveSum=0, overSum=0;
   state.parts.forEach(p=>{
     const planned = num(p.price)*num(p.qty);
     const hasActual = p.status==='purchased' && num(p.actualPaid||p.paid)>0;
-    if(!hasActual) return; // 구매 안했으면 제외
+    if(!hasActual) return;
     const actual = num(p.actualPaid || p.paid);
     const v = actual - planned;
     if(v<0) saveSum += (-v);
@@ -381,7 +391,7 @@ function compute(){
   return {balances, invested, target, saveSum, overSum};
 }
 
-/* ===== 홈(링/레전드) ===== */
+/* ===== 홈(링/전설) ===== */
 function setSegment(el, r, startFrac, frac){
   const C = 2*Math.PI*r; const f = Math.max(0, Math.min(1, frac)); const s = Math.max(0, Math.min(1, startFrac));
   const seg = C * f;
@@ -390,36 +400,39 @@ function setSegment(el, r, startFrac, frac){
   el.style.opacity = f>0 ? 1 : 0.18;
 }
 function renderRing(){
-  // 링은 기존 3세그 유지(구매누계/적금/입출금의 합 산출) — 진행률 텍스트는 소수1자리
+  // 링은 3세그 유지(구매누계 / 적금 / 나머지 모든 계좌) — 퍼센트/요약은 전체 계좌 합계 기준
   const {balances, invested, target, saveSum, overSum} = compute();
-  const sav = getTypeFirst('savings');  const chk = getTypeFirst('checking');
+  const activeAccts = state.accounts.filter(a=>!a.archived);
+  const sav = getRole('savings');
+
+  const totalAcc = activeAccts.reduce((s,a)=> s + (balances[a.id]||0), 0);
   const fixed = sav ? (balances[sav.id]||0) : 0;
-  const floating = chk ? (balances[chk.id]||0) : 0;
+  const others = totalAcc - fixed;
 
   const invF = target>0 ? invested/target : 0;
   const fixF = target>0 ? fixed/target : 0;
-  const floF = target>0 ? Math.max(0, floating/target) : 0;
-  const totalF = Math.min(1, invF + fixF + floF);
+  const othF = target>0 ? Math.max(0, others/target) : 0;
+  const totalF = Math.min(1, invF + fixF + othF);
 
   setSegment(byId('seg-invest'), 88, 0, invF);
   setSegment(byId('seg-fixed'),  88, invF, fixF);
-  setSegment(byId('seg-float'),  88, invF+fixF, floF);
+  setSegment(byId('seg-float'),  88, invF+fixF, othF);
   byId('home-percent').textContent = (totalF*100).toFixed(1) + '%';
 
-  const sumAll = fixed + floating + invested;
+  const sumAll = totalAcc + invested;
   const extra = sumAll - target;
   byId('home-summary').textContent  = `${fmt(sumAll)} / ${fmt(target)}원`;
-  byId('home-sub').textContent = `구매누계 ${fmt(invested)} · 적금 ${fmt(fixed)} · 입출금 ${floating<0?'-':''}${fmt(Math.abs(floating))}`;
+  byId('home-sub').textContent = `구매누계 ${fmt(invested)} · 적금 ${fmt(fixed)} · 입출금 ${others<0?'-':''}${fmt(Math.abs(others))}`;
   byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : '\u00A0';
   byId('home-variance').innerHTML = `절약 <span style="color:#5fb3ff;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
 
-  // 전설: 구매누계(녹색) → 절약(파랑) → 초과(빨강) → 계좌들(각 색)
+  // 전설: 구매누계/절약/초과 + 활성 계좌
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   leg.appendChild(mk('#6ee7a8','구매누계'));
   leg.appendChild(mk('#5fb3ff','절약'));
   leg.appendChild(mk('#ff6b6b','초과'));
-  state.accounts.forEach(a=> leg.appendChild(mk(a.color||'#7aa2ff', a.name)));
+  activeAccts.forEach(a=> leg.appendChild(mk(a.color||'#7aa2ff', a.name)));
 }
 
 /* ===== 부품 ===== */
@@ -505,8 +518,8 @@ function onPartsClick(e){
   if(act==='buy'){ if(p.status==='purchased') return undoPurchase(p); else return purchasePart(p); }
 }
 function choosePayAccounts(total){
-  // 간단: 우선순위 savings → checking, 부족하면 경고
-  const s = getTypeFirst('savings'); const c = getTypeFirst('checking');
+  // 이름 기반: 적금 → 입출금 순
+  const s = getRole('savings'); const c = getRole('checking');
   const {balances} = compute();
   const sBal = Math.max(0,(s && balances[s.id])||0);
   const cBal = Math.max(0,(c && balances[c.id])||0);
@@ -539,7 +552,6 @@ function undoPurchase(p){
     const original = state.txns.find(t=>t.id===id); if(!original) return;
     state.txns.push({id:uid(), dt:nowLocalISO(), kind:'reversal', amount:original.amount, fromId:original.fromId, toId:original.toId, memo:'구매 되돌리기', partId:original.partId, reversalOf:original.id});
   });
-  // 실지출/차액 초기화
   p.status='planned'; p.purchaseTxnIds=[]; p.paid=0; p.actualPaid=0; p.purchasedAt=null;
   save(); renderAll();
 }
@@ -550,23 +562,35 @@ function addTxn({kind, amount, fromId, toId, memo, partId}){
 
 /* ===== 자금(그래프/입력) ===== */
 function refreshAcctSelects(){
+  const active = state.accounts.filter(a=>!a.archived);
+  const opts = active.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+
+  // 거래 입력
   const acctSel = byId('txn-acct');
-  acctSel.innerHTML = state.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  // transfer selects
+  acctSel.innerHTML = opts;
+
+  // 이체
   const s1 = byId('tr-from'), s2 = byId('tr-to');
-  s1.innerHTML = state.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  s2.innerHTML = s1.innerHTML;
+  s1.innerHTML = opts; s2.innerHTML = opts;
+
+  // 기본값: From=입출금, To=적금(없으면 임의로)
+  const defFrom = active.find(a=>a.name==='입출금')?.id || active[0]?.id;
+  const defTo   = active.find(a=>a.name==='적금' && a.id!==defFrom)?.id
+               || active.find(a=>a.id!==defFrom)?.id
+               || active[0]?.id;
+  if(defFrom) s1.value = defFrom;
+  if(defTo)   s2.value = defTo;
 }
 function renderDynamicBars(){
   const wrap = byId('fund-bars'); wrap.innerHTML='';
   const {balances, invested, target} = compute();
 
-  // 구매누계 먼저
+  // 구매누계
   const pctI  = target>0 ? Math.min(100, Math.round((invested/target)*1000)/10) : 0;
   wrap.appendChild(barRow('구매누계', '#6ee7a8', pctI));
 
-  // 각 계좌
-  state.accounts.forEach(a=>{
+  // 각 계좌(보관 제외)
+  state.accounts.filter(a=>!a.archived).forEach(a=>{
     const bal = balances[a.id]||0;
     const pct = target>0 ? Math.min(100, Math.round((Math.max(0,bal)/target)*1000)/10) : 0;
     wrap.appendChild(barRow(a.name, a.color||'#7aa2ff', pct));
@@ -582,7 +606,7 @@ function barRow(label,color,pct){
 }
 function renderFunds(){
   const {balances, invested} = compute();
-  const totalAcc = Object.values(balances).reduce((s,v)=>s+v,0);
+  const totalAcc = state.accounts.filter(a=>!a.archived).reduce((s,a)=>s+(balances[a.id]||0),0);
   byId('funds-balance').textContent = `계좌합계 ${fmt(totalAcc)} · 구매누계 ${fmt(invested)}`;
   renderDynamicBars();
 }
@@ -608,7 +632,7 @@ byId('btn-add-txn').onclick = ()=>{
 /* ===== 계좌 관리 ===== */
 function renderAccounts(){
   const box = byId('acct-list'); box.innerHTML='';
-  state.accounts.forEach(a=>{
+  state.accounts.filter(a=>!a.archived).forEach(a=>{
     const div = document.createElement('div'); div.className='card';
     div.innerHTML = `
       <div class="row">
@@ -616,14 +640,6 @@ function renderAccounts(){
         <div><label>색상(그래프)</label><input type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}"></div>
       </div>
       <div class="row" style="margin-top:6px">
-        <div>
-          <label>종류</label>
-          <select data-k="type" data-id="${a.id}">
-            <option value="checking" ${a.type==='checking'?'selected':''}>입출금</option>
-            <option value="savings"  ${a.type==='savings'?'selected':''}>적금</option>
-            <option value="other"    ${a.type==='other'?'selected':''}>기타</option>
-          </select>
-        </div>
         <div style="display:flex;align-items:flex-end;justify-content:flex-end">
           <button class="danger" data-act="del" data-id="${a.id}">삭제</button>
         </div>
@@ -633,7 +649,7 @@ function renderAccounts(){
   refreshAcctSelects();
 }
 byId('btn-add-acct').onclick = ()=>{
-  state.accounts.push({id:uid(), name:'새 계좌', type:'other', color:'#7aa2ff'});
+  state.accounts.push({id:uid(), name:'새 계좌', type:'other', color:'#7aa2ff', archived:false});
   save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
 };
 byId('acct-list').addEventListener('change', (e)=>{
@@ -641,18 +657,34 @@ byId('acct-list').addEventListener('change', (e)=>{
   const a = accountById(id); if(!a) return;
   const k = e.target.dataset.k;
   if(k==='name') a.name = e.target.value;
-  if(k==='type') a.type = e.target.value;
   if(k==='color') a.color = e.target.value;
   save(); renderAccounts(); renderFunds(); renderRing();
 });
 byId('acct-list').addEventListener('click', (e)=>{
   const id = e.target.dataset.id; const act = e.target.dataset.act;
-  if(act==='del'){
-    const used = state.txns.some(t=>t.fromId===id || t.toId===id);
-    if(used) return alert('해당 계좌는 거래에 사용되어 삭제할 수 없습니다.');
-    state.accounts = state.accounts.filter(a=>a.id!==id);
-    save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
+  if(act!=='del') return;
+  const a = accountById(id); if(!a) return;
+
+  const activeCount = state.accounts.filter(x=>!x.archived).length;
+  if(activeCount<=2) return alert('계좌는 최소 2개 이상이어야 합니다. 다른 계좌를 먼저 추가하세요.');
+
+  const {balances} = compute();
+  const bal = Math.max(0, balances[id]||0);
+
+  // 잔액이 있으면 어디로 옮길지 선택
+  if(bal>0){
+    const cands = state.accounts.filter(x=>!x.archived && x.id!==id);
+    const list = cands.map((x,i)=> `${i+1}. ${x.name}`).join('\n');
+    const answer = prompt(`해당 계좌 잔액 ${fmt(bal)}원을 어디로 옮길까요?\n아래 번호 중 선택해 입력하세요.\n${list}`, '1');
+    if(answer==null) return;
+    const idx = Math.max(1, Math.min(cands.length, parseInt(answer,10)||1)) - 1;
+    const dest = cands[idx];
+    addTxn({kind:'transfer', amount:bal, fromId:id, toId:dest.id, memo:'계좌 삭제 정산'});
   }
+
+  // 실제 삭제 대신 보관 플래그
+  a.archived = true;
+  save(); renderAccounts(); refreshAcctSelects(); renderFunds(); renderRing();
 });
 
 /* ===== 이체 ===== */
@@ -666,11 +698,10 @@ byId('btn-transfer').onclick = ()=>{
   byId('tr-amt').value=''; byId('tr-memo').value=''; renderAll();
 };
 
-/* ===== 캘린더(그대로) ===== */
+/* ===== 캘린더 ===== */
 let calBase = new Date(); calBase.setDate(1);
 function renderCalendar(){
   const y = calBase.getFullYear(), m = calBase.getMonth();
-  const firstDay = new Date(y,m,1); const days = new Date(y,m+1,0).getDate();
   byId('cal-title').textContent = `${y}-${pad2(m+1)}`;
   const grid = byId('cal-grid'); grid.innerHTML='';
   const {active} = activeTxnMap(); const target = targetTotal();
@@ -684,7 +715,9 @@ function renderCalendar(){
   acts.forEach(t=>{ if(t.dt.slice(0,7) < monthPrefix) apply(run,t); });
   let prevProg = target>0 ? ((Object.values(run.b).reduce((s,v)=>s+v,0))+run.i)/target : 0;
   const byDate = {}; acts.forEach(t=>{ if(t.dt.slice(0,7)===monthPrefix){ (byDate[t.dt.slice(0,10)] ??= []).push(t);} });
+  const firstDay = new Date(y,m,1);
   for(let i=0;i<firstDay.getDay();i++){ const c=document.createElement('div'); grid.appendChild(c); }
+  const days = new Date(y,m+1,0).getDate();
   for(let day=1; day<=days; day++){
     const dstr = `${y}-${pad2(m+1)}-${pad2(day)}`;
     (byDate[dstr]||[]).forEach(t=> apply(run,t));
@@ -802,10 +835,15 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
+/* 부품 카드 이벤트 바인딩 (구매처리/삭제가 안되던 문제 해결) */
+byId('parts-cards').addEventListener('input', onPartsChange);
+byId('parts-cards').addEventListener('change', onPartsChange);
+byId('parts-cards').addEventListener('click', onPartsClick);
+
 function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1r1 initialized'); }
+try{ load(); renderAll(); console.log('App v1.1r1 patched'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
