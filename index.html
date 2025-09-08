@@ -9,7 +9,7 @@
   /* ===== 테마 변수 ===== */
   :root{
     --bg:#0b0f15;--panel:#121826;--txt:#e7eefb;--muted:#9fb0c9;--acc:#7aa2ff;
-    --good:#6ee7a8;--warn:#ffd166;--bad:#ff7b7b;--orange:#ffb86b;--green:#6ee7a8;--gray:#94a3b8;
+    --good:#5fb3ff;--warn:#ffd166;--bad:#ff7b7b;--orange:#ffb86b;--green:#5fb3ff;--gray:#94a3b8;
     --link:#8ab4ff;--stroke:#1f2a44
   }
   [data-theme="light"]{
@@ -420,7 +420,7 @@ function renderRing(){
   const invF = target>0 ? Math.max(0, Math.min(1, invested/target)) : 0;
   const c1 = document.createElementNS(svgNS, 'circle');
   c1.setAttribute('cx','110'); c1.setAttribute('cy','110'); c1.setAttribute('r', String(r));
-  c1.setAttribute('stroke', '#6ee7a8'); c1.setAttribute('stroke-width','14'); c1.setAttribute('stroke-linecap','round'); c1.setAttribute('fill','none');
+  c1.setAttribute('stroke', '#5fb3ff'); c1.setAttribute('stroke-width','14'); c1.setAttribute('stroke-linecap','round'); c1.setAttribute('fill','none');
   g.appendChild(c1);
   setSegment(c1, r, start, invF);
   start += invF;
@@ -448,13 +448,13 @@ function renderRing(){
   byId('home-sub').textContent = acctLine || ' ';
 
   byId('home-extra').textContent = extra>0 ? ('+'+fmt(extra)+'원 초과') : ' ';
-  byId('home-variance').innerHTML = `절약 <span style="color:#5fb3ff;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
+  byId('home-variance').innerHTML = `절약 <span style="color:#6ee7a8;font-weight:700">+${fmt(saveSum)}</span> · 초과 <span style="color:#ff6b6b;font-weight:700">-${fmt(overSum)}</span>`;
 
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   const row1 = document.createElement('div'); row1.className='legend-row';
-  row1.appendChild(mk('#6ee7a8','구매누계'));
-  row1.appendChild(mk('#5fb3ff','절약'));
+  row1.appendChild(mk('#5fb3ff','구매누계'));
+  row1.appendChild(mk('#6ee7a8','절약'));
   row1.appendChild(mk('#ff6b6b','초과'));
   leg.appendChild(row1);
   const row2 = document.createElement('div'); row2.className='legend-row';
@@ -496,7 +496,7 @@ function renderParts(){
           </div>
           <div class="split">
             <div class="muted">차액</div>
-            <div class="right" style="font-weight:700;${variance<0?'color:#5fb3ff':variance>0?'color:#ff6b6b':''}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
+            <div class="right" style="font-weight:700;${variance<0?'color:#6ee7a8':variance>0?'color:#ff6b6b':''}">${!isPurchased?'-':(variance===0?'0':(variance>0?'+':'')+fmt(variance))}</div>
           </div>
           <div class="actions">
             <button data-act="buy">${isPurchased?'되돌리기':'구매처리'}</button>
@@ -607,7 +607,7 @@ function renderDynamicBars(){
   const {balances, invested, target} = compute();
 
   const pctI  = target>0 ? Math.min(100, Math.round((invested/target)*1000)/10) : 0;
-  wrap.appendChild(barRow('구매누계', '#6ee7a8', pctI));
+  wrap.appendChild(barRow('구매누계', '#5fb3ff', pctI));
 
   state.accounts.filter(a=>!a.archived).forEach(a=>{
     const bal = balances[a.id]||0;
@@ -887,3 +887,4 @@ catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 </script>
 </body>
 </html>
+
