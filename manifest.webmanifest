@@ -1,9 +1,9 @@
 {
   "name": "조립 PC 자금 플랜",
   "short_name": "자금 플랜",
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/savings_app/",
+  "start_url": "/savings_app/",
+  "scope": "/savings_app/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0b1220",
@@ -11,17 +11,18 @@
   "description": "부품·자금·캘린더·메모로 조립 PC 목표 저축을 관리하는 PWA",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "/savings_app/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "/savings_app/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "productivity", "utilities"]
+  "categories": ["finance", "productivity", "utilities"],
+  "prefer_related_applications": false
 }
