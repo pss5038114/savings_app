@@ -1,5 +1,5 @@
 // 캐시 버전을 바꾸면 즉시 새 리소스를 받음
-const CACHE_NAME = 'savings-app-v1.1r1-3';
+const CACHE_NAME = 'savings-app-v1.1r2';
 
 // 설치 시 프리캐시(필요한 정적 리소스를 여기에 추가)
 const ASSETS = [
@@ -51,3 +51,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
