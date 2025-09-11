@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>조립 PC 자금 플랜 — v1.1 (edit-actual fixes)</title>
+<title>조립 PC 자금 플랜 — v1.1 (typing-stability)</title>
 <link rel="manifest" href="manifest.webmanifest">
-<!-- iOS는 manifest 아이콘을 무시하므로 apple-touch-icon이 있어야 아이콘이 바뀝니다 -->
 <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,7 +12,6 @@
   /* ===== 테마 변수 ===== */
   :root{
     --bg:#0b0f15;--panel:#121826;--txt:#e7eefb;--muted:#9fb0c9;--acc:#7aa2ff;
-    /* 색상 관리 포인트(다크) */
     --purchase:#6ee7a8;  /* 구매누계 */
     --saving:#5fb3ff;    /* 절약(바깥링·파랑) */
     --over:#ff6b6b;      /* 초과(바깥링·빨강) */
@@ -22,11 +20,7 @@
   }
   [data-theme="light"]{
     --bg:#f6f8ff;--panel:#ffffff;--txt:#0b0f15;--muted:#5b6b83;--acc:#2b5eff;
-    /* 색상 관리 포인트(라이트) — 필요시 여기만 바꾸면 앱 전체 반영 */
-    --purchase:#16a34a;
-    --saving:#2563eb;
-    --over:#e11d48;
-    --good:#0ea371;
+    --purchase:#16a34a; --saving:#2563eb; --over:#e11d48; --good:#0ea371;
     --link:#1d4ed8;--stroke:#e5e7eb
   }
 
@@ -49,12 +43,10 @@
   [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff;color:#0b0f15;border-color:#d0d7e2}
   input:focus,textarea:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(122,162,255,.16)}
 
-  /* 버튼 */
   button{background:#1b2a4b;color:var(--txt);border:1px solid #2a3d66;border-radius:12px;padding:10px 12px;cursor:pointer}
   button.primary{background:#27468f;border-color:#3159b6}
   button.danger{background:#5a1f2a;border-color:#7a2b3a}
   button.ghost{background:transparent;border-color:#2a3d66;color:var(--muted)}
-  /* 라이트테마 버튼을 밝게 */
   [data-theme="light"] button{background:#eef2ff;border-color:#c7d2fe;color:#0b0f15}
   [data-theme="light"] button.primary{background:#2563eb;border-color:#1e40af;color:#fff}
   [data-theme="light"] button.danger{background:#fee2e2;border-color:#fecaca;color:#7f1d1d}
@@ -70,33 +62,28 @@
   .tag{display:inline-flex;align-items:center;gap:6px;margin-right:12px}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 
-  /* 링 그래프 */
   .ring-outer{display:flex;justify-content:center;width:100%}
   .ring{width:min(56vw,220px);height:min(56vw,220px);position:relative;display:grid;place-items:center}
   .ring svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
   .ring .center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
   .ring .center #home-percent{font-size:28px;font-weight:800}
 
-  /* 하단 네비(8개) */
   nav{position:fixed;left:0;right:0;bottom:0;height:76px;background:rgba(18,24,38,.98);backdrop-filter:blur(6px);border-top:1px solid var(--stroke);display:grid;grid-template-columns:repeat(8,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
   [data-theme="light"] nav{background:rgba(255,255,255,.98)}
   nav button{appearance:none;-webkit-appearance:none;background:transparent;border:none;padding:10px 6px;color:var(--muted);outline:none;border-radius:0;-webkit-tap-highlight-color:transparent}
   nav button.active{color:var(--txt)}
-  /* 라이트 모드 포커스 잔상 제거 */
   [data-theme="light"] nav button:focus,[data-theme="light"] nav button:focus-visible{outline:none}
 
   .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .legend{display:flex;gap:6px;flex-direction:column}
   .legend-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
-  /* 자금 그래프 막대 */
   .bars{display:grid;gap:8px;margin-bottom:8px}
   .bar{height:12px;background:#09111f;border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
   .bar>div{height:100%}
   .barrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
   [data-theme="light"] .bar{background:#ffffff;border-color:#e5e7eb}
 
-  /* 부품 카드 */
   .p-cards{display:grid;gap:10px;margin-top:14px}
   .p-card{border:1px solid var(--stroke);background:#0f1524;border-radius:14px;padding:12px}
   [data-theme="light"] .p-card{background:#fff;border-color:#e5e7eb}
@@ -110,14 +97,12 @@
   .p-card .sum{margin-top:10px}
   .p-card .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
 
-  /* 캘린더 */
   #cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .cal-cell{position:relative;padding:8px;border-radius:12px;border:1px solid var(--stroke);background:#101624;color:inherit;min-height:66px;text-align:left}
   [data-theme="light"] .cal-cell{background:#fff;border-color:#e5e7eb}
   .pct{font-feature-settings:"tnum" 1;display:inline-block;min-width:42px}
   .purchase-dot{position:absolute;right:8px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--purchase)}
 
-  /* 메모 드롭다운 폭 줄이기 */
   #memo-sort{width:100px}
 
   @media (max-width: 640px){
@@ -143,10 +128,8 @@
       <div class="ring-outer">
         <div class="ring">
           <svg id="ring-svg" viewBox="0 0 220 220" preserveAspectRatio="xMidYMid meet">
-            <!-- 안쪽(두꺼운) 배경 링 -->
             <circle cx="110" cy="110" r="88" stroke="var(--stroke)" stroke-width="14" fill="none"/>
             <g id="seg-group"></g>
-            <!-- 바깥(얇은) 배경 링 -->
             <circle cx="110" cy="110" r="102" stroke="var(--stroke)" stroke-width="6" fill="none" opacity=".35"/>
             <g id="variance-group"></g>
           </svg>
@@ -160,7 +143,6 @@
       </div>
     </div>
 
-    <!-- 전설 -->
     <div id="home-legend" class="legend" style="margin-top:8px"></div>
 
     <div class="muted" id="home-extra" style="margin-top:6px"> </div>
@@ -223,7 +205,7 @@
     </div>
     <div class="row" style="margin-top:8px">
       <div><label>금액(원)</label><input id="tr-amt" inputmode="numeric" placeholder="예: 100000"/></div>
-      <div><label>메모</label><input id="tr-memo" placeholder="예: 정산/이체 등"/></div>
+      <div><label>메모</label><input id="tr-memo" placeholder="예: 계좌 이체"/></div>
     </div>
     <div class="flex" style="margin-top:10px"><button id="btn-transfer" class="primary">이체 실행</button></div>
   </section>
@@ -421,12 +403,10 @@ function renderRing(){
   const activeAccts = state.accounts.filter(a=>!a.archived);
   const sumAcc = activeAccts.reduce((s,a)=> s + Math.max(0,(balances[a.id]||0)), 0);
 
-  /* 중앙 퍼센트 */
   const netAdj = saveSum - overSum;
   const totalF = target>0 ? Math.max(0, Math.min(1, (invested + sumAcc + netAdj)/target )) : 0;
   byId('home-percent').textContent = (totalF*100).toFixed(1) + '%';
 
-  /* 안쪽 링 */
   const g = document.getElementById('seg-group');
   while(g.firstChild) g.removeChild(g.firstChild);
 
@@ -434,7 +414,6 @@ function renderRing(){
   const r = 88;
   const svgNS = 'http://www.w3.org/2000/svg';
 
-  // 1) 구매누계
   const invF = target>0 ? Math.max(0, Math.min(1, invested/target)) : 0;
   const c1 = document.createElementNS(svgNS, 'circle');
   c1.setAttribute('cx','110'); c1.setAttribute('cy','110'); c1.setAttribute('r', String(r));
@@ -443,7 +422,6 @@ function renderRing(){
   setSegment(c1, r, start, invF);
   start += invF;
 
-  // 2) 각 계좌
   activeAccts.forEach(a=>{
     const frac = target>0 ? Math.max(0, (balances[a.id]||0)/target) : 0;
     if(frac<=0) return;
@@ -455,7 +433,6 @@ function renderRing(){
     start += frac;
   });
 
-  /* 바깥 링: 절약/초과 */
   const vg = document.getElementById('variance-group');
   while(vg.firstChild) vg.removeChild(vg.firstChild);
 
@@ -463,7 +440,6 @@ function renderRing(){
   const saveFrac = target>0 ? Math.max(0, Math.min(1, saveSum/target)) : 0;
   const overFrac = target>0 ? Math.max(0, Math.min(1, overSum/target)) : 0;
 
-  // 절약(반시계)
   if(saveFrac>0){
     const cs = document.createElementNS(svgNS, 'circle');
     cs.setAttribute('cx','110'); cs.setAttribute('cy','110'); cs.setAttribute('r', String(r2));
@@ -471,7 +447,6 @@ function renderRing(){
     vg.appendChild(cs);
     setSegment(cs, r2, 1 - saveFrac, saveFrac);
   }
-  // 초과(시계)
   if(overFrac>0){
     const co = document.createElementNS(svgNS, 'circle');
     co.setAttribute('cx','110'); co.setAttribute('cy','110'); co.setAttribute('r', String(r2));
@@ -480,7 +455,6 @@ function renderRing(){
     setSegment(co, r2, 0, overFrac);
   }
 
-  // 요약/부가표시
   const targetSum = target;
   const sumAll = invested + sumAcc + (saveSum - overSum);
   const extra = sumAll - targetSum;
@@ -497,7 +471,6 @@ function renderRing(){
   byId('home-variance').innerHTML =
     `바깥 링 — <span style="color:var(--saving);font-weight:700">절약 ${fmt(saveSum)}</span> · <span style="color:var(--over);font-weight:700">초과 ${fmt(overSum)}</span> (중앙 %에 ±반영)`;
 
-  // 전설
   const leg = byId('home-legend'); leg.innerHTML='';
   const mk = (c,txt)=>{ const s=document.createElement('span'); s.className='tag'; s.innerHTML=`<span class="dot" style="background:${c}"></span><span class="muted">${txt}</span>`; return s; };
   const row1 = document.createElement('div'); row1.className='legend-row';
@@ -536,7 +509,7 @@ function renderParts(){
           </div>
           <div class="split sum">
             <div class="muted">합계(계획)</div>
-            <div class="right" style="font-weight:700">${fmt(planned)}원</div>
+            <div class="right" data-role="sum" style="font-weight:700">${fmt(planned)}원</div>
           </div>
           <div class="split">
             <div class="muted">실지출</div>
@@ -556,58 +529,66 @@ function renderParts(){
     wrap.appendChild(div);
   });
 }
-function onPartsChange(e){
-  const holder = e.target.closest('[data-id]'); if(!holder) return;
-  const id = holder.dataset.id; const p = state.parts.find(x=>x.id===id); if(!p) return;
-  const act = e.target.dataset.act; const k = e.target.dataset.k;
-  if(act==='img'){
-    const file = e.target.files?.[0]; if(!file) return;
-    const fr = new FileReader(); fr.onload = ()=>{ p.image = fr.result; save(); renderParts(); renderRing(); }; fr.readAsDataURL(file); return;
-  }
-  if(k){
-    if(k==='name') p.name = e.target.value;
-    else if(k==='price') p.price = num(e.target.value);
-    else if(k==='qty') p.qty = num(e.target.value)||1;
-    save(); renderParts(); renderRing();
-  }
+
+/* 부분 업데이트용 헬퍼 */
+function updatePartCardSum(holder, p){
+  const sumEl = holder.querySelector('[data-role="sum"]');
+  if(sumEl) sumEl.textContent = fmt(num(p.price)*num(p.qty))+'원';
 }
 
-/* ▲▲ ▲ NEW: 실지출 편집 시 전표 금액을 함께 조정하는 유틸 */
+/* 실지출 편집 시 전표 금액 동기화 */
 function adjustPurchaseTxns(p, newTotal){
   if(!Array.isArray(p.purchaseTxnIds) || p.purchaseTxnIds.length===0) return;
-  // 구매 시 생성한 expense 전표만 추출(되돌리기 전표 제외)
   const txs = p.purchaseTxnIds
     .map(id => state.txns.find(t => t.id===id && t.kind==='expense' && !t.reversalOf))
     .filter(Boolean);
-
   if(txs.length===0) return;
-
   const current = txs.reduce((s,t)=> s + (t.amount||0), 0);
   let diff = newTotal - current;
-
   if(diff === 0) return;
 
   if(diff > 0){
-    // 늘어나는 경우: 마지막 전표에 차액을 더한다
     txs[txs.length-1].amount += diff;
   }else{
-    // 줄어드는 경우: 뒤에서부터 차감
     let need = -diff;
     for(let i=txs.length-1; i>=0 && need>0; i--){
       const cut = Math.min(need, txs[i].amount);
       txs[i].amount -= cut;
       need -= cut;
     }
-    // 0원이 된 전표는 정리
-    const keep = [];
     p.purchaseTxnIds = p.purchaseTxnIds.filter(id=>{
       const t = state.txns.find(x=>x.id===id);
-      if(!t) return false;
-      if(t.amount<=0){ return false; }
-      keep.push(t); return true;
+      return t && t.amount>0;
     });
-    // state.txns에서 0원 전표 제거
-    state.txns = state.txns.filter(t => t.amount>0 || !txs.includes(t));
+    state.txns = state.txns.filter(t => t.amount>0);
+  }
+}
+
+/* 🔧 여기 수정: input(타이핑 중)에서는 재렌더 X — 포커스 유지 */
+function onPartsChange(e){
+  const holder = e.target.closest('[data-id]'); if(!holder) return;
+  const id = holder.dataset.id; const p = state.parts.find(x=>x.id===id); if(!p) return;
+  const act = e.target.dataset.act; const k = e.target.dataset.k;
+
+  if(act==='img'){
+    const file = e.target.files?.[0]; if(!file) return;
+    const fr = new FileReader(); fr.onload = ()=>{ p.image = fr.result; save(); renderParts(); renderRing(); }; fr.readAsDataURL(file); return;
+  }
+
+  if(!k) return;
+
+  if(k==='name') p.name = e.target.value;
+  else if(k==='price') p.price = num(e.target.value);
+  else if(k==='qty') p.qty = num(e.target.value)||1;
+
+  save();
+
+  if(e.type === 'input'){
+    updatePartCardSum(holder, p);  // 카드 안 합계만 갱신
+    renderRing();                  // 목표 합계 반영(재계산)
+  } else {
+    renderParts();                 // blur/change 시 전체 새로고침
+    renderRing();
   }
 }
 
@@ -627,15 +608,13 @@ function onPartsClick(e){
     const input = prompt(`실지출 수정 (계획 ${fmt(planned)}원)`, String(num(p.actualPaid||p.paid||0)));
     if(input==null) return;
     const actual = num(input);
-
-    // ▼ 전표 금액 맞추기(일시는 그대로 유지)
     adjustPurchaseTxns(p, actual);
-
     p.actualPaid = actual;
     save(); renderParts(); renderRing(); renderCalendar();
   }
   if(act==='buy'){ if(p.status==='purchased') return undoPurchase(p); else return purchasePart(p); }
 }
+
 function choosePayAccounts(total){
   const s = getRole('savings'); const c = getRole('checking');
   const {balances} = compute();
@@ -749,7 +728,6 @@ function renderAccounts(){
         <div><label>이름</label><input data-k="name" data-id="${a.id}" value="${a.name}"></div>
         <div>
           <label>색상(그래프)</label>
-          <!-- 얇은 미리보기 선 -->
           <div style="height:10px;border:1px solid var(--stroke);border-radius:999px;overflow:hidden;margin-top:8px">
             <div data-role="colorbar" data-id="${a.id}" style="height:100%;width:100%;background:${a.color||'#7aa2ff'}"></div>
           </div>
@@ -757,7 +735,6 @@ function renderAccounts(){
       </div>
       <div class="row" style="margin-top:6px">
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
-          <!-- 숨겨진 컬러 입력기 + 트리거 버튼 -->
           <input class="hide" type="color" data-k="color" data-id="${a.id}" value="${a.color||'#7aa2ff'}">
           <button data-act="pick" data-id="${a.id}">색상 지정</button>
           <button class="danger" data-act="del" data-id="${a.id}">삭제</button>
@@ -767,7 +744,6 @@ function renderAccounts(){
   });
   refreshAcctSelects();
 }
-/* 컬러 변경/이름 변경 */
 byId('acct-list').addEventListener('change', (e)=>{
   const id = e.target.dataset.id; if(!id) return;
   const a = accountById(id); if(!a) return;
@@ -776,7 +752,6 @@ byId('acct-list').addEventListener('change', (e)=>{
   if(k==='color'){ a.color = e.target.value; }
   save(); renderAccounts(); renderFunds(); renderRing();
 });
-/* 색상 지정 버튼/삭제 */
 byId('acct-list').addEventListener('click', (e)=>{
   const id = e.target.dataset.id; const act = e.target.dataset.act;
   if(!id || !act) return;
@@ -867,7 +842,6 @@ function renderCalendar(){
   }
   let run = {b:{},i:0,v:0}; const monthPrefix = `${y}-${pad2(m+1)}`;
 
-  // 월 시작 이전 누적 반영
   acts.forEach(t=>{ if(t.dt.slice(0,7) < monthPrefix) apply(run,t); });
   run.v = varianceBefore(monthPrefix);
 
@@ -1009,6 +983,7 @@ function show(v){
 document.querySelectorAll('nav button').forEach(b=> b.onclick = ()=> show(b.dataset.view));
 byId('btn-add-part').onclick = ()=>{ state.parts.push({id:uid(), name:'', price:0, qty:1, status:'planned', image:null, purchaseTxnIds:[], paid:0, actualPaid:0}); save(); renderParts(); renderRing(); };
 
+/* 입력 안정화: input/blur 모두 수신 */
 byId('parts-cards').addEventListener('input', onPartsChange);
 byId('parts-cards').addEventListener('change', onPartsChange);
 byId('parts-cards').addEventListener('click', onPartsClick);
@@ -1016,9 +991,10 @@ byId('parts-cards').addEventListener('click', onPartsClick);
 function renderAll(){ applyTheme(); renderRing(); renderParts(); refreshAcctSelects(); renderFunds(); renderAccounts(); renderCalendar(); renderMemo(); }
 
 /* 부팅 */
-try{ load(); renderAll(); console.log('App v1.1 — edit-actual updates txn amounts'); }
+try{ load(); renderAll(); console.log('App v1.1 — typing-stability fix'); }
 catch(e){ alert('초기화 오류: '+ e.message); console.error(e); }
 
+/* SW 등록 */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/savings_app/sw.js', { scope: '/savings_app/' })
@@ -1029,11 +1005,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
